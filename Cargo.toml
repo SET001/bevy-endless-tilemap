@@ -9,3 +9,4 @@ edition = "2021"
 bevy = { version = "0.8.0", features = ["dynamic", "trace"] }
 bevy_ecs_tilemap = { version = "0.8.0"}
 rand = "0.8.5"
+perlin2d = "0.2.6"

@@ -1,8 +1,9 @@
 use bevy::prelude::*;
 use bevy_ecs_tilemap::{tiles::{TileStorage, TileTexture, TilePos, TileVisible}, prelude::{get_tile_neighbors, TilemapType, NeighborDirection, Neighbors}};
 use rand::{thread_rng, Rng};
+use perlin2d::PerlinNoise2D;
 
-use crate::{GameStates, GroundTilemap, OverGroundTilemap};
+use crate::{GameStates, GroundTilemap, OverGroundTilemap, WorldNoise};
 
 pub struct InitStatePlugin;
 
@@ -20,7 +21,8 @@ impl Plugin for InitStatePlugin {
       .add_system_set(
         SystemSet::on_enter(GameStates::Init)
           .with_system(generate_sand_spots)
-          .with_system(generate_trees)
+          .with_system(generate_roads)
+          .with_system(generate_forests)
           .after(generate_grass)
       )
       .add_system_set(
@@ -35,8 +37,11 @@ impl Plugin for InitStatePlugin {
   }
 }
 
-fn init_tilemaps(){
+fn init_tilemaps(
+  mut commands: Commands
+){
   info!("generating tilemaps");
+  
 }
 
 fn generate_grass(
@@ -61,41 +66,63 @@ fn generate_grass(
 }
 
 fn generate_sand_spots(
+  world_perlin: Res<WorldNoise>,
   q_tilestorage: Query<&TileStorage, With<GroundTilemap>>,
   mut tile_query: Query<&mut TileTexture>,
 ){
-  info!("generating sand spots");
+  info!("generating sands");
   let mut rng = thread_rng();
   let tilestorage = q_tilestorage.get_single().unwrap();
-  
-  for _ in 0..rng.gen_range(10..40) {
-    let x = rng.gen_range(0..tilestorage.size.x);
-    let y = rng.gen_range(0..tilestorage.size.y);
-    let tile = tilestorage.get(&TilePos{x, y}).unwrap();
-    let mut tile_texture = tile_query.get_mut(tile).unwrap();
-    tile_texture.0 = 30;
 
-    let neighboring_entities = get_tile_neighbors(&TilePos { x, y }, tilestorage, &TilemapType::Square {
-      diagonal_neighbors: true,
-    });
-    // let mut sand_tiles_que = sand_tiles.clone();
-
-    for entity in neighboring_entities.into_iter(){
-      
-      let mut tile_texture = tile_query.get_mut(entity).unwrap();
-      // let new_tile = sand_tiles_que.pop().unwrap();
-      tile_texture.0 = 30;
-      // if tile_texture.0 != new_tile && (tile_texture.0 == 30 || sand_tiles.contains(&tile_texture.0)){
-      // } else {
-      //   tile_texture.0 = new_tile;
-      // }
+  let perlin = &world_perlin.0;
+  for tilestorage in q_tilestorage.iter(){
+    for x in 0..tilestorage.size.x {
+      for y in 0..tilestorage.size.y {
+        let noise = perlin.get_noise(x.into(), y.into());
+        if noise < -1. {
+          let tile = tilestorage.get(&TilePos{x, y}).unwrap();
+          let mut tile_texture = tile_query.get_mut(tile).unwrap();
+          tile_texture.0 = 30;
+        }
+        // println!("{x}:{y} => {noise}");
+      }
     }
   }
+
+  // for x in 0..
+  // for _ in 0..rng.gen_range(10..40) {
+  //   let x = rng.gen_range(0..tilestorage.size.x);
+  //   let y = rng.gen_range(0..tilestorage.size.y);
+  //   let tile = tilestorage.get(&TilePos{x, y}).unwrap();
+  //   let mut tile_texture = tile_query.get_mut(tile).unwrap();
+  //   tile_texture.0 = 30;
+
+  //   let neighboring_entities = get_tile_neighbors(&TilePos { x, y }, tilestorage, &TilemapType::Square {
+  //     diagonal_neighbors: true,
+  //   });
+  //   // let mut sand_tiles_que = sand_tiles.clone();
+
+  //   for entity in neighboring_entities.into_iter(){
+      
+  //     let mut tile_texture = tile_query.get_mut(entity).unwrap();
+  //     // let new_tile = sand_tiles_que.pop().unwrap();
+  //     tile_texture.0 = 30;
+  //     // if tile_texture.0 != new_tile && (tile_texture.0 == 30 || sand_tiles.contains(&tile_texture.0)){
+  //     // } else {
+  //     //   tile_texture.0 = new_tile;
+  //     // }
+  //   }
+  // }
 }
 
 
 fn generate_roads(){
-  info!("generating roads");
+  let mut rng = thread_rng();
+  let c_roads = rng.gen_range(1..3);
+  info!("generating {c_roads} roads");
+  for _ in 0..c_roads{
+    let c_road = rng.gen_range(1..3);
+  }
 }
 
 fn rounding_sand_corners(
@@ -156,7 +183,40 @@ fn rounding_sand_corners(
   }
 }
 
-fn generate_trees(
+fn generate_forests(
+  world_perlin: Res<WorldNoise>,
+  mut tile_query: Query<(&mut TileTexture, &mut TileVisible)>,
+  q_tilestorage: Query<&TileStorage, With<OverGroundTilemap>>,
+){
+  info!("generating forests");
+  let mut rng = thread_rng();
+  let perlin = &world_perlin.0;
+
+  for tilestorage in q_tilestorage.iter(){
+    for x in 0..tilestorage.size.x {
+      for y in 0..tilestorage.size.y {
+        let tile = tilestorage.get(&TilePos{x, y}).unwrap();
+        if let Ok((_, mut tile_visible)) = tile_query.get_mut(tile) {
+          tile_visible.0 = false;
+        }
+      }
+    }
+    for x in 0..tilestorage.size.x {
+      for y in 0..tilestorage.size.y {
+        let noise = perlin.get_noise(x.into(), y.into());
+        if noise > 4. {
+          let tile = tilestorage.get(&TilePos{x, y}).unwrap();
+          let (mut tile_texture, mut tile_visible) = tile_query.get_mut(tile).unwrap();
+          tile_texture.0 = noise as u32 - 4;
+          tile_visible.0 = true;
+        }
+        // println!("{x}:{y} => {noise}");
+      }
+    }
+  }
+}
+
+fn generate_stand_alone_trees(
   q_tilestorage: Query<&TileStorage, With<OverGroundTilemap>>,
   mut tile_query: Query<(&mut TileTexture, &mut TileVisible)>,
 ){

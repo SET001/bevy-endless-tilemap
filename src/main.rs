@@ -1,9 +1,11 @@
 use bevy::{prelude::*, render::texture::ImageSettings};
 use bevy_ecs_tilemap::{prelude::{TilemapSize, TilemapId, TilemapTileSize, TilemapTexture, get_tilemap_center_transform, ArrayTextureLoader, TilemapArrayTexture, TilemapGridSize,
   }  , tiles::{TileStorage, TilePos, TileBundle, TileTexture, TileVisible}, TilemapBundle, TilemapPlugin, helpers};
-use bevy_tilemap_test::{GameStates, init::InitStatePlugin, game::GameStatePlugin, GroundTilemap, OverGroundTilemap};
+use bevy_tilemap_test::{GameStates, init::InitStatePlugin, game::GameStatePlugin, GroundTilemap, OverGroundTilemap, WorldNoise};
+use perlin2d::PerlinNoise2D;
 use rand::thread_rng;
 use rand::Rng;
+
 fn main() {
   let mut app = App::new();
   app
@@ -24,6 +26,20 @@ fn startup(
   array_texture_loader: Res<ArrayTextureLoader>,
   windows: Res<Windows>
 ){
+  let mut rng = thread_rng();
+  let seed = rng.gen_range(0..2000);
+  let perlin = PerlinNoise2D::new(
+    6,
+    10.0,
+    0.5,
+    1.0,
+    2.0,
+    (100.0, 100.0),
+    0.5,
+    seed
+  );
+  commands.insert_resource(WorldNoise(perlin));
+  
   let grass_texture_handle: Handle<Image> = asset_server.load("grass_tiles.png");
   let tree_texture_handle: Handle<Image> = asset_server.load("tree_tiles.png");
 

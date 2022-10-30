@@ -1,4 +1,5 @@
 use bevy::prelude::Component;
+use perlin2d::PerlinNoise2D;
 
 pub mod init;
 pub mod game;
@@ -17,3 +18,5 @@ pub struct GroundTilemap;
 
 #[derive(Component)]
 pub struct OverGroundTilemap;
+
+pub struct WorldNoise(pub PerlinNoise2D);
