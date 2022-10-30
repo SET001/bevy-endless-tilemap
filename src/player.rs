@@ -136,7 +136,7 @@ pub fn bind_camera_to_player(
 pub fn player_controls(
   mut q_player: Query<(&ActionState<PlayerAction>, &mut Transform, Option<&MoveDirection>), With<Player>>,
 ){
-  let speed = 1.;
+  let speed = 2.;
   
   let (action_state, mut player_transform, move_direction) = q_player.single_mut();
   if (move_direction.is_some()){
