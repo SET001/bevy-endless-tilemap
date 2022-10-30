@@ -222,25 +222,27 @@ fn generate_stand_alone_trees(
 ){
   let mut rng = thread_rng();
 
-  let tilestorage = q_tilestorage.get_single().unwrap();
-  let c_trees = rng.gen_range(5..480);
-  for x in 0..tilestorage.size.x {
-    for y in 0..tilestorage.size.y {
-      let tile = tilestorage.get(&TilePos{x, y}).unwrap();
-      if let Ok((_, mut tile_visible)) = tile_query.get_mut(tile) {
-        tile_visible.0 = false;
+  for tilestorage in q_tilestorage.iter(){
+    let c_trees = rng.gen_range(5..480);
+    for x in 0..tilestorage.size.x {
+      for y in 0..tilestorage.size.y {
+        let tile = tilestorage.get(&TilePos{x, y}).unwrap();
+        if let Ok((_, mut tile_visible)) = tile_query.get_mut(tile) {
+          tile_visible.0 = false;
+        }
       }
     }
-  }
-  for _ in 0..c_trees {
-    let x = rng.gen_range(0..tilestorage.size.x);
-    let y = rng.gen_range(0..tilestorage.size.y);
-    let tile = tilestorage.get(&TilePos{x, y}).unwrap();
-    if let Ok((mut tile_texture, mut tile_visible)) = tile_query.get_mut(tile) {
-      tile_texture.0 = rng.gen_range(0..10);
-      tile_visible.0 = true;
+    
+    for _ in 0..c_trees {
+      let x = rng.gen_range(0..tilestorage.size.x);
+      let y = rng.gen_range(0..tilestorage.size.y);
+      let tile = tilestorage.get(&TilePos{x, y}).unwrap();
+      if let Ok((mut tile_texture, mut tile_visible)) = tile_query.get_mut(tile) {
+        tile_texture.0 = rng.gen_range(0..10);
+        tile_visible.0 = true;
+      }
     }
-  }
+  };
 
   info!("generating trees");
 }
