@@ -2,7 +2,7 @@ use bevy::{prelude::*, render::texture::ImageSettings};
 use bevy_ecs_tilemap::{prelude::{TilemapSize, TilemapId, TilemapTileSize, TilemapTexture, get_tilemap_center_transform, ArrayTextureLoader, TilemapArrayTexture, TilemapGridSize,
   }  , tiles::{TileStorage, TilePos, TileBundle, TileTexture, TileVisible}, TilemapBundle, TilemapPlugin, helpers};
 use bevy_editor_pls::EditorPlugin;
-use bevy_tilemap_test::{GameStates, init::InitStatePlugin, game::GameStatePlugin, GroundTilemap, OverGroundTilemap, WorldNoise, DefaultCamera, load::LoadStatePlugin, player::PlayerAction, TextureAtlases, AssetsLoading};
+use bevy_tilemap_test::{GameStates, GroundTilemap, OverGroundTilemap, WorldNoise, DefaultCamera, player::PlayerAction, TextureAtlases, AssetsLoading, states::{game::GameStatePlugin, load::LoadStatePlugin, GameStatesPlugins}};
 use leafwing_input_manager::prelude::InputManagerPlugin;
 use perlin2d::PerlinNoise2D;
 use rand::thread_rng;
@@ -16,15 +16,12 @@ fn main() {
     .init_resource::<TextureAtlases>()
     .add_plugins(DefaultPlugins)
     .insert_resource(ImageSettings::default_nearest())
-    .add_state(GameStates::Load)
     .add_plugin(InputManagerPlugin::<PlayerAction>::default())
     .add_plugin(TilemapPlugin)
-    .add_plugin(GameStatePlugin)
-    .add_plugin(LoadStatePlugin)
     .add_plugin(EditorPlugin)
-    .add_plugin(InitStatePlugin);
+    .add_plugins(GameStatesPlugins)
+    .add_state(GameStates::Load);
   app.run();
-  println!("Hello, world!");
 }
 
 
@@ -38,6 +35,7 @@ fn startup(
 ){
   let mut rng = thread_rng();
   let seed = rng.gen_range(0..2000);
+  info!("generating perlin noise");
   let perlin = PerlinNoise2D::new(
     6,
     10.0,
@@ -48,15 +46,13 @@ fn startup(
     0.5,
     seed
   );
+  info!("perlin noise generated");
   commands.insert_resource(WorldNoise(perlin));
-  
-  let grass_texture_handle: Handle<Image> = asset_server.load("grass_tiles.png");
-  let tree_texture_handle: Handle<Image> = asset_server.load("tree_tiles.png");
 
   let window = windows.get_primary().unwrap();
   let tilemap_size = TilemapSize {
-    x: 200,
-    y: 200
+    x: 11,
+    y: 11
 
     // x: window.width() as u32 /20,
     // y: window.height() as u32 /20

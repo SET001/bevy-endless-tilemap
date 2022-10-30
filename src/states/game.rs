@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{GameStates, player::{spawn_player, player_controls, bind_camera_to_player}};
+use crate::{GameStates, player::{spawn_player, player_controls, bind_camera_to_player}, };
 
 
 pub struct GameStatePlugin;
@@ -15,9 +15,12 @@ impl Plugin for GameStatePlugin {
       )
       .add_system_set(
         SystemSet::on_update(GameStates::Game)
-          // .with_system(player_controls)
+          .with_system(player_controls)
           .with_system(bind_camera_to_player)
           .with_system(restart)
+          .with_system(despawn_outofrange_chunks)
+          .with_system(despawn_outofrange_chunks)
+          
       )
       ;
   }
@@ -35,4 +38,16 @@ fn restart(
   //   buttons.clear();
   //   app_state.set(GameStates::Init).unwrap();
   // }
+}
+
+fn spawn_chunk(){
+
+}
+
+fn spawn_chunks_around_camera(){
+  
+}
+
+fn despawn_outofrange_chunks(){
+
 }

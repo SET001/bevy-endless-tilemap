@@ -1,9 +1,7 @@
 use bevy::{prelude::{Component, Handle, HandleUntyped}, sprite::TextureAtlas};
 use perlin2d::PerlinNoise2D;
-pub mod init;
-pub mod game;
+pub mod states;
 pub mod player;
-pub mod load;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 

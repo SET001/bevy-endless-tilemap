@@ -79,7 +79,7 @@ fn generate_sand_spots(
     for x in 0..tilestorage.size.x {
       for y in 0..tilestorage.size.y {
         let noise = perlin.get_noise(x.into(), y.into());
-        if noise < -1. {
+        if noise < 1. {
           let tile = tilestorage.get(&TilePos{x, y}).unwrap();
           let mut tile_texture = tile_query.get_mut(tile).unwrap();
           tile_texture.0 = 30;
