@@ -17,6 +17,7 @@ fn load(
   asset_server: Res<AssetServer>,
 ){
   loading.0.append(&mut asset_server.load_folder("images").unwrap().clone());
+
 }
 
 fn update(
