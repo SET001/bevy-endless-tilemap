@@ -14,7 +14,6 @@ impl Plugin for LoadStatePlugin {
 
 fn load(
   mut loading: ResMut<AssetsLoading>,
-  mut texture_handles: ResMut<TextureAtlases>,
   asset_server: Res<AssetServer>,
 ){
   loading.0.append(&mut asset_server.load_folder("images").unwrap().clone());
@@ -42,7 +41,7 @@ fn update(
         11
       ));
       info!("texture_handles.player: {:?}", texture_handles.player);
-      app_state.set(GameStates::Init).unwrap();
+      app_state.set(GameStates::Game).unwrap();
     }
     _ => {}
   }

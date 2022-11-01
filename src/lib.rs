@@ -32,3 +32,8 @@ pub struct AssetsLoading(pub Vec<HandleUntyped>);
 pub struct DefaultCamera;
 
 pub struct WorldNoise(pub PerlinNoise2D);
+
+pub struct AppConfig{
+  pub tile_size: i32,
+  pub chunk_size: i32
+}

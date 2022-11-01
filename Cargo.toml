@@ -12,3 +12,4 @@ rand = "0.8.5"
 bevy_editor_pls = { git = "https://github.com/jakobhellermann/bevy_editor_pls"}
 leafwing-input-manager = "0.6.1"
 perlin2d = "0.2.6"
+rstest = "0.15.0"

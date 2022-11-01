@@ -1,8 +1,6 @@
 use bevy::prelude::*;
-use bevy_ecs_tilemap::{tiles::{TileStorage, TileTexture, TilePos, TileVisible}, prelude::{get_tile_neighbors, TilemapType, NeighborDirection, Neighbors}};
+use bevy_ecs_tilemap::{tiles::{TileStorage, TileTexture, TilePos, TileVisible}, prelude::{get_tile_neighbors, TilemapType}};
 use rand::{thread_rng, Rng};
-use perlin2d::PerlinNoise2D;
-
 use crate::{GameStates, GroundTilemap, OverGroundTilemap, WorldNoise};
 
 pub struct InitStatePlugin;
