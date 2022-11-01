@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = { version = "0.8.0", features = ["dynamic", "trace"] }
+bevy = { version = "0.8.0", features = ["dynamic"] }
 bevy_ecs_tilemap = { version = "0.8.0"}
 bevy_editor_pls = { git = "https://github.com/jakobhellermann/bevy_editor_pls"}
 rstest = "0.15.0"

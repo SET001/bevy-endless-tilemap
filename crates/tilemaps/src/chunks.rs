@@ -12,7 +12,7 @@ pub fn get_chunk_center(
 )->Vec2{
   Vec2::new(
     (-tile_size*((chunk_size-1)/2)) as f32 + ((relative_position.x)*tile_size*chunk_size) as f32,
-    (-tile_size*((chunk_size-1)/2)) as f32 + ((relative_position.y)*tile_size*chunk_size) as f32
+    (-tile_size*((chunk_size-1)/2)) as f32 + ((-relative_position.y)*tile_size*chunk_size) as f32
   )
 }
 

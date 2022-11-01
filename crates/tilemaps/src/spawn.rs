@@ -60,7 +60,7 @@ pub fn spawn_chunk(
       }
     }
     let transform = Transform::from_translation(event.chunk_possition.extend(0.));
-    info!("spawning chunk {:?} on position {:?}", event.chunk_index, transform.translation);
+    info!(target: "chunk spawner", "spawning chunk {:?} on position {:?}", event.chunk_index, transform.translation);
     let font = asset_server.load("../../../assets/fonts/FiraSans-Bold.ttf");
     let text_style = TextStyle {
         font,
@@ -78,13 +78,19 @@ pub fn spawn_chunk(
         tile_size,
         transform,
         ..Default::default()
-      }).with_children(|parent|{
+      })
+      .insert(Name::new(format!("Chunk {}:{}", event.chunk_index.x, event.chunk_index.y)))
+      .with_children(|parent|{
 
         let text_alignment = TextAlignment::CENTER;
         parent.spawn_bundle(Text2dBundle {
           text: Text::from_section(format!("{}:{}", event.chunk_index.x, event.chunk_index.y), text_style.clone())
-              .with_alignment(text_alignment),
-          transform: Transform::from_translation(Vec2::default().extend(10.)),
+            .with_alignment(text_alignment),
+          transform: Transform::from_xyz(
+            tile_size.x * (event.chunk_size.x-1) as f32 / 2.,
+            tile_size.y * (event.chunk_size.y-1) as f32 / 2.,
+            10.
+          ),
           ..default()
         });
       });
