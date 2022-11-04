@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_ecs_tilemap::{prelude::{TilemapSize, TilemapGridSize, TilemapTileSize, TilemapTexture, TilemapId}, tiles::{TileStorage, TileTexture, TilePos, TileBundle}, TilemapBundle};
 
-use crate::chunks::{ChunkManager, get_chunk_center};
+use crate::{chunks::{ChunkManager, get_chunk_center}, TilemapChunk};
 
 pub struct SpawnChunkEvent{
   pub chunk_possition: Vec2,
@@ -80,6 +80,7 @@ pub fn spawn_chunk(
         ..Default::default()
       })
       .insert(Name::new(format!("Chunk {}:{}", event.chunk_index.x, event.chunk_index.y)))
+      .insert(TilemapChunk)
       .with_children(|parent|{
 
         let text_alignment = TextAlignment::CENTER;

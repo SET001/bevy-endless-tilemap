@@ -1,16 +1,17 @@
 use bevy::{prelude::*, utils::HashSet};
 
-use crate::spawn::SpawnChunkEvent;
-
-#[derive(Default)]
-pub struct ChunkManager{
-  pub chunks: HashSet<IVec2>
-}
+use crate::{spawn::SpawnChunkEvent, TilemapChunk};
 
 // pub struct Chunk{
 //   position: Vec2,
 //   index: IVec2
 // }
+
+
+#[derive(Default)]
+pub struct ChunkManager{
+  pub chunks: HashSet<IVec2>
+}
 
 // pub struct ChunkedTilemaps{
 
@@ -67,7 +68,25 @@ pub fn spawn_chunks_around_current(
   }
 }
 
-pub fn get_chunk_at_position(position: Vec2, tile_size: IVec2, chunk_size: IVec2)->IVec2{
+pub fn despawn_outbound_chunks(
+  mut commands: Commands,
+  q_chunks: Query<(&TilemapChunk, &Transform, Entity)>,
+  current_chunk: Res<CurrentChunk>,
+  chunked_config: Res<ChunkedTilemapConfig>
+){
+  for (chunk, transform, entity) in q_chunks.iter(){
+    let chunk_index = get_chunk_at_position(
+      transform.translation.truncate(),
+      chunked_config.chunk_size,
+      chunked_config.tile_size
+    );
+    if (chunk_index.x-current_chunk.0.x).abs() >2 || (chunk_index.y-current_chunk.0.y).abs() >2 {
+      commands.entity(entity).despawn_recursive();
+    }
+  }
+}
+
+pub fn get_chunk_at_position(position: Vec2, chunk_size: IVec2, tile_size: IVec2,)->IVec2{
   return IVec2::new(
     (position.x/(tile_size.x*chunk_size.x) as f32).round() as i32,
     (-position.y/(tile_size.y*chunk_size.y) as f32).round() as i32,

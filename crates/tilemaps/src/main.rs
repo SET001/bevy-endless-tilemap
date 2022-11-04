@@ -1,6 +1,6 @@
 use bevy::{prelude::*, DefaultPlugins, sprite::MaterialMesh2dBundle, input::mouse::MouseMotion};
 use bevy_editor_pls::EditorPlugin;
-use tilemaps::{spawn::SpawnChunkEvent, chunks::{ChunkManager, get_chunk_center, CurrentChunk, get_chunk_at_position, ChunkedTilemapConfig}, ChunkedTilemapPlugin};
+use tilemaps::{chunks::{CurrentChunk, ChunkedTilemapConfig}, ChunkedTilemapPlugin};
 
 fn main() {
   let mut app = App::new();
