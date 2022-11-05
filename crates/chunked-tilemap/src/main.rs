@@ -1,13 +1,20 @@
 use bevy::{prelude::*, DefaultPlugins, sprite::MaterialMesh2dBundle, input::mouse::MouseMotion};
 use bevy_ecs_tilemap::tiles::{TileStorage, TilePos, TileTexture, TileVisible};
 use bevy_editor_pls::EditorPlugin;
-use tilemaps::{ChunkedTilemapPlugin, bundle::{ChunkedTilemapBundle, ChunkedTilemap}, spawn::InitChunkEvent, TilemapChunk};
+use chunked_tilemap::{ChunkedTilemapPlugin, bundle::{ChunkedTilemapBundle, ChunkedTilemap}, spawn::InitChunkEvent, TilemapChunk};
 
 const CHUNK_SIZE: i32 = 5;
 const TILE_SIZE: i32 = 32;
+
+#[derive(Default)]
+pub struct TilemapLayers{
+  pub ground: Option<Entity>,
+  pub trees: Option<Entity>
+}
 fn main() {
   let mut app = App::new();
   app
+  .init_resource::<TilemapLayers>()
   .add_plugins(DefaultPlugins)
   .add_plugin(ChunkedTilemapPlugin)
   .add_plugin(EditorPlugin)
@@ -29,6 +36,7 @@ fn startup(
   mut commands: Commands,
   mut meshes: ResMut<Assets<Mesh>>,
   mut materials: ResMut<Assets<ColorMaterial>>,
+  mut tilemap_layers: ResMut<TilemapLayers>,
   asset_server: Res<AssetServer>,
 ){
   commands.spawn_bundle(Camera2dBundle::default()).insert(DefaultCamera);
@@ -40,7 +48,7 @@ fn startup(
   }).insert(CenterMarker);
 
 
-  commands.spawn_bundle(ChunkedTilemapBundle{
+  tilemap_layers.ground = Some(commands.spawn_bundle(ChunkedTilemapBundle{
     name: Name::new("Ground layer"),
     chunked_tilemap: ChunkedTilemap{
       chunk_size: IVec2::new(CHUNK_SIZE, CHUNK_SIZE),
@@ -50,9 +58,9 @@ fn startup(
       ..Default::default()
     },
     ..Default::default()
-  });
+  }).id());
 
-  commands.spawn_bundle(ChunkedTilemapBundle{
+  tilemap_layers.trees = Some(commands.spawn_bundle(ChunkedTilemapBundle{
     name: Name::new("Trees layer"),
     chunked_tilemap: ChunkedTilemap{
       chunk_size: IVec2::new(CHUNK_SIZE, CHUNK_SIZE),
@@ -66,7 +74,7 @@ fn startup(
       ..Default::default()
     },
     ..Default::default()
-  });
+  }).id());
 }
 
 fn move_camera(
@@ -93,41 +101,41 @@ fn move_camera(
 }
 
 fn init_ground_chunk(
-  mut er_init_ground_chunk: EventReader<InitChunkEvent>,
-  mut q_tilemaps: Query<(&mut ChunkedTilemap, &Name, &Children)>,
-  mut q_chunk: Query<(&TileStorage, &TilemapChunk)>,
+  mut er_init_chunk: EventReader<InitChunkEvent>,
+  q_tilemaps: Query<(&mut ChunkedTilemap, &Children)>,
   mut q_tile_texture: Query<&mut TileTexture>,
+  tilemap_layers: ResMut<TilemapLayers>,
+  q_chunk: Query<(&TileStorage, &TilemapChunk)>
 ){
-  for event in er_init_ground_chunk.iter(){
-    let (tilemap, name, children) = q_tilemaps.get(event.tilemap).unwrap();
-    if name.to_string() == "Ground layer".to_string(){
-      for &child in children.iter(){
-        if let Ok((tile_storage, tilemap_chunk)) = q_chunk.get(child){
-          if tilemap_chunk.0 == event.index{
-            let tile_index =  if (event.index.x+event.index.y).abs() % 2 > 0 {
-                0
-              } else {
-                3
-              };
-            for x in 0..tilemap.chunk_size.x{
-              for y in 0..tilemap.chunk_size.y{
-                if let Some(tile) = tile_storage.get(&TilePos{
-                  x: x as u32,
-                  y: y as u32
-                }){
-                  let mut texture = q_tile_texture.get_mut(tile).unwrap();
-                  texture.0 = tile_index;
-                }else {
-                  info!("no tile pos");
-                }
+  let init_ground_chunk_events = er_init_chunk.iter().filter(|event| event.tilemap == tilemap_layers.ground.unwrap());
+  for event in init_ground_chunk_events{
+    let (tilemap, children) = q_tilemaps.get(event.tilemap).unwrap();
+    for &child in children.iter(){
+      if let Ok((tile_storage, tilemap_chunk)) = q_chunk.get(child){
+        if tilemap_chunk.0 == event.index{
+          let tile_index =  if (event.index.x+event.index.y).abs() % 2 > 0 {
+              0
+            } else {
+              3
+            };
+          for x in 0..tilemap.chunk_size.x{
+            for y in 0..tilemap.chunk_size.y{
+              if let Some(tile) = tile_storage.get(&TilePos{
+                x: x as u32,
+                y: y as u32
+              }){
+                let mut texture = q_tile_texture.get_mut(tile).unwrap();
+                texture.0 = tile_index;
+              }else {
+                info!("no tile pos");
               }
             }
-            
-
           }
-        } else {
-          info!("no tile storage");
+          
+
         }
+      } else {
+        info!("no tile storage");
       }
     }
   }
