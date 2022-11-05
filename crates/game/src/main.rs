@@ -1,13 +1,15 @@
-use bevy::{prelude::*, render::texture::ImageSettings};
-use bevy_ecs_tilemap::{
-  prelude::*,
-  tiles::{TileStorage, TilePos, TileBundle, TileTexture, TileVisible},
-  TilemapBundle,
-  TilemapPlugin,
-  helpers
-};
+use bevy::asset::AssetServerSettings;
+use bevy::prelude::*;
+
 use bevy_editor_pls::EditorPlugin;
-use bevy_tilemap_test::{GameStates, GroundTilemap, OverGroundTilemap, WorldNoise, DefaultCamera, player::PlayerAction, TextureAtlases, AssetsLoading, states::{game::GameStatePlugin, load::LoadStatePlugin, GameStatesPlugins}, AppConfig};
+use chunked_tilemap::ChunkedTilemapPlugin;
+use game::AssetsLoading;
+use game::DefaultCamera;
+use game::GameStates;
+use game::TextureAtlases;
+use game::WorldNoise;
+use game::player::PlayerAction;
+use game::states::GameStatesPlugins;
 use leafwing_input_manager::prelude::InputManagerPlugin;
 use perlin2d::PerlinNoise2D;
 use rand::thread_rng;
@@ -20,14 +22,14 @@ fn main() {
     .add_startup_system(startup)
     .init_resource::<AssetsLoading>()
     .init_resource::<TextureAtlases>()
-    .insert_resource(AppConfig{
-      tile_size: 32,
-      chunk_size: 5
+    .insert_resource(AssetServerSettings {
+      watch_for_changes: true,
+      asset_folder: "../../assets".to_string(),
+      ..Default::default()
     })
     .add_plugins(DefaultPlugins)
-    .insert_resource(ImageSettings::default_nearest())
+    .add_plugin(ChunkedTilemapPlugin)
     .add_plugin(InputManagerPlugin::<PlayerAction>::default())
-    .add_plugin(TilemapPlugin)
     .add_plugin(EditorPlugin)
     .add_plugins(GameStatesPlugins)
     .add_state(GameStates::Load);

@@ -1,10 +1,4 @@
-use bevy::{prelude::*, utils::HashSet, sprite::MaterialMesh2dBundle};
-use bevy_ecs_tilemap::{
-  prelude::*,
-  tiles::{TileStorage, TilePos, TileBundle},
-  TilemapBundle,
-  helpers::geometry::get_tilemap_center
-};
+use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 
 use crate::{GameStates, player::{spawn_player, player_controls, bind_camera_to_player}, AppConfig, GroundTilemap, };
 
@@ -13,8 +7,6 @@ pub struct GameStatePlugin;
 impl Plugin for GameStatePlugin {
   fn build(&self, app: &mut App) {
     app
-      .add_event::<SpawnChunkEvent>()
-      .init_resource::<ChunkManager>()
       .add_system_set(
         SystemSet::on_enter(GameStates::Game)
           .with_system(start)
@@ -22,12 +14,8 @@ impl Plugin for GameStatePlugin {
         )
         .add_system_set(
           SystemSet::on_update(GameStates::Game)
-          // .with_system(player_controls)
           .with_system(bind_camera_to_player)
           .with_system(restart)
-          .with_system(spawn_chunks_around_current)
-          .with_system(despawn_outofrange_chunks)
-          .with_system(spawn_chunk)
         );
   }
 }
