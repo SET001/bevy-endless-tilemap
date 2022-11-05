@@ -1,11 +1,12 @@
 use bevy::{prelude::{Plugin, ResMut, Vec2, IVec2, Component}, sprite::Rect};
 use bevy_ecs_tilemap::TilemapPlugin;
-use chunks::{ChunkManager, CurrentChunk, spawn_chunks_around_current, update_current_chunk, despawn_outbound_chunks};
+use chunks::{spawn_chunks_around_current, update_current_chunk, despawn_outbound_chunks};
 use spawn::{SpawnChunkEvent, spawn_chunk};
 
 pub mod chunks;
 pub mod spawn;
 pub mod despawn;
+pub mod bundle;
 
 pub struct ChunkedTilemapPlugin;
 
@@ -13,8 +14,6 @@ impl Plugin for ChunkedTilemapPlugin{
   fn build(&self, app: &mut bevy::prelude::App) {
     app
       .add_event::<SpawnChunkEvent>()
-      .init_resource::<ChunkManager>()
-      .init_resource::<CurrentChunk>()
       
       .add_plugin(TilemapPlugin)
       .add_system(update_current_chunk)

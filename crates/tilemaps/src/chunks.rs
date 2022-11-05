@@ -1,68 +1,52 @@
 use bevy::{prelude::*, utils::HashSet};
 
-use crate::{spawn::SpawnChunkEvent, TilemapChunk};
+use crate::{spawn::SpawnChunkEvent, TilemapChunk, bundle::ChunkedTilemap};
 
 // pub struct Chunk{
 //   position: Vec2,
 //   index: IVec2
 // }
 
-
-#[derive(Default)]
-pub struct ChunkManager{
-  pub chunks: HashSet<IVec2>
-}
-
-// pub struct ChunkedTilemaps{
-
-// }
-#[derive(Default)]
-pub struct ChunkedTilemapConfig{
-  pub chunk_size:  IVec2,
-  pub tile_size: IVec2,
-  pub center: Vec2
-}
-
-#[derive(Default)]
-pub struct CurrentChunk(pub IVec2);
-
 pub fn update_current_chunk(
-  mut current_chunk: ResMut<CurrentChunk>,
-  config: Res<ChunkedTilemapConfig>
+  mut q_tilemaps: Query<&mut ChunkedTilemap>,
 ){
-  let actually_current_chunk = get_chunk_at_position(
-    config.center,
-    config.chunk_size,
-    config.tile_size,
-  );
-  if current_chunk.0 != actually_current_chunk{
-    current_chunk.0 = actually_current_chunk;
-    info!("current chunk changed {}", current_chunk.0);
+  for mut tilemap in q_tilemaps.iter_mut(){
+    let actually_current_chunk = get_chunk_at_position(
+      tilemap.center,
+      tilemap.chunk_size,
+      tilemap.tile_size,
+    );
+    if tilemap.current_chunk != actually_current_chunk{
+      tilemap.current_chunk = actually_current_chunk;
+      info!("current chunk changed {}", tilemap.current_chunk);
+    }
   }
 }
 
 pub fn spawn_chunks_around_current(
   mut ew_spawn_chunk: EventWriter<SpawnChunkEvent>,
-  chunk_manager: Res<ChunkManager>,
-  current_chunk: Res<CurrentChunk>,
-  chunked_config: Res<ChunkedTilemapConfig>
+  q_tilemaps: Query<(&ChunkedTilemap, Entity)>
 ){
-  let chunk_size = chunked_config.chunk_size;
-  let tile_size = chunked_config.tile_size;
-  for y in (current_chunk.0.y - 2)..=(current_chunk.0.y + 2) {
-    for x in (current_chunk.0.x - 2)..=(current_chunk.0.x + 2) {
-      let index = IVec2::new(x, y);
-      if !chunk_manager.chunks.contains(&index){
-        ew_spawn_chunk.send(SpawnChunkEvent {
-          chunk_size: chunk_size,
-          tile_size: tile_size,
-          chunk_possition: get_chunk_center(
-            chunk_size,
-            tile_size,
-            IVec2::new(x, y)
-          ),
-          chunk_index: index
-        });
+  for (tilemap, entity) in q_tilemaps.iter(){
+
+    let chunk_size = tilemap.chunk_size;
+    let tile_size = tilemap.tile_size;
+    for y in (tilemap.current_chunk.y - tilemap.range)..=(tilemap.current_chunk.y + tilemap.range) {
+      for x in (tilemap.current_chunk.x - tilemap.range)..=(tilemap.current_chunk.x + tilemap.range) {
+        let index = IVec2::new(x, y);
+        if !tilemap.chunks.contains(&index){
+          ew_spawn_chunk.send(SpawnChunkEvent {
+            chunk_size: chunk_size,
+            tilemap_entity: entity,
+            tile_size: tile_size,
+            chunk_possition: get_chunk_center(
+              chunk_size,
+              tile_size,
+              IVec2::new(x, y)
+            ),
+            chunk_index: index
+          });
+        }
       }
     }
   }
@@ -70,21 +54,23 @@ pub fn spawn_chunks_around_current(
 
 pub fn despawn_outbound_chunks(
   mut commands: Commands,
-  mut chunk_manager: ResMut<ChunkManager>,
-  q_chunks: Query<(&TilemapChunk, &Transform, Entity)>,
-  current_chunk: Res<CurrentChunk>,
-  chunked_config: Res<ChunkedTilemapConfig>
+  q_chunks: Query<(&Transform, Entity), With<TilemapChunk>>,
+  mut q_tilemaps: Query<(&mut ChunkedTilemap, &Children)>
 ){
-  for (chunk, transform, entity) in q_chunks.iter(){
-    let chunk_index = get_chunk_at_position(
-      transform.translation.truncate(),
-      chunked_config.chunk_size,
-      chunked_config.tile_size
-    );
-    if (chunk_index.x-current_chunk.0.x).abs() >2 || (chunk_index.y-current_chunk.0.y).abs() >2 {
-      // info!("despawning chunk at {:?} - {}", chunk_index, chunk_index-current_chunk.0);
-      chunk_manager.chunks.remove(&chunk_index);
-      commands.entity(entity).despawn_recursive();
+  for (mut tilemap, children) in q_tilemaps.iter_mut(){
+    for &children in children.iter(){
+      if let Ok((transform, entity)) =  q_chunks.get(children){    
+        let chunk_index = get_chunk_at_position(
+          transform.translation.truncate(),
+          tilemap.chunk_size,
+          tilemap.tile_size
+        );
+        if (chunk_index.x-tilemap.current_chunk.x).abs() > tilemap.range|| (chunk_index.y-tilemap.current_chunk.y).abs() > tilemap.range {
+          // info!("despawning chunk at {:?} - {}", chunk_index, chunk_index-current_chunk.0);
+          tilemap.chunks.remove(&chunk_index);
+          commands.entity(entity).despawn_recursive();
+        }
+      }
     }
   }
 }
