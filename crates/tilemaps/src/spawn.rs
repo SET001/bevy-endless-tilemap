@@ -32,7 +32,7 @@ pub fn spawn_chunk(
     let mut tile_storage = TileStorage::empty(tilemap_size);
 
     
-    let tile =  if (event.chunk_index.x+event.chunk_index.y) % 2 > 0 {
+    let tile =  if (event.chunk_index.x+event.chunk_index.y).abs() % 2 > 0 {
       0
     } else {
       3

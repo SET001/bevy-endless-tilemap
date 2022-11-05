@@ -43,7 +43,7 @@ pub fn update_current_chunk(
 
 pub fn spawn_chunks_around_current(
   mut ew_spawn_chunk: EventWriter<SpawnChunkEvent>,
-  chunk_manager: ResMut<ChunkManager>,
+  chunk_manager: Res<ChunkManager>,
   current_chunk: Res<CurrentChunk>,
   chunked_config: Res<ChunkedTilemapConfig>
 ){
@@ -70,6 +70,7 @@ pub fn spawn_chunks_around_current(
 
 pub fn despawn_outbound_chunks(
   mut commands: Commands,
+  mut chunk_manager: ResMut<ChunkManager>,
   q_chunks: Query<(&TilemapChunk, &Transform, Entity)>,
   current_chunk: Res<CurrentChunk>,
   chunked_config: Res<ChunkedTilemapConfig>
@@ -81,6 +82,8 @@ pub fn despawn_outbound_chunks(
       chunked_config.tile_size
     );
     if (chunk_index.x-current_chunk.0.x).abs() >2 || (chunk_index.y-current_chunk.0.y).abs() >2 {
+      // info!("despawning chunk at {:?} - {}", chunk_index, chunk_index-current_chunk.0);
+      chunk_manager.chunks.remove(&chunk_index);
       commands.entity(entity).despawn_recursive();
     }
   }

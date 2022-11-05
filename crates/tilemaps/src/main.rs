@@ -37,7 +37,7 @@ fn startup(
   commands.spawn_bundle(Camera2dBundle::default()).insert(DefaultCamera);
   commands.spawn_bundle(MaterialMesh2dBundle {
     mesh: meshes.add(Mesh::from(shape::Quad::default())).into(),
-    transform: Transform::default().with_scale(Vec3::splat((chunked_config.chunk_size.x) as f32)).with_translation(Vec3::new(0., 0., 20.)),
+    transform: Transform::default().with_scale(Vec3::splat((chunked_config.chunk_size.x*chunked_config.tile_size.x) as f32)).with_translation(Vec3::new(0., 0., 20.)),
     material: materials.add(ColorMaterial::from(Color::rgba(0.5, 0.0, 0.5, 0.5))),
     ..default()
   }).insert(CenterMarker);
