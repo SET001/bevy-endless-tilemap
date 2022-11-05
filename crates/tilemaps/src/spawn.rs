@@ -11,10 +11,16 @@ pub struct SpawnChunkEvent{
   pub tile_size: IVec2
 }
 
+pub struct InitChunkEvent{
+  pub tilemap: Entity,
+  pub index: IVec2
+}
+
 pub fn spawn_chunk(
   mut er_spawn_chunk: EventReader<SpawnChunkEvent>,
   mut commands: Commands,
   mut q_tilemaps: Query<&mut ChunkedTilemap>,
+  mut ew_init_chunk_event: EventWriter<InitChunkEvent>,
   asset_server: Res<AssetServer>,
 ){
   for event in er_spawn_chunk.iter(){
@@ -32,27 +38,15 @@ pub fn spawn_chunk(
       let grid_size = TilemapGridSize { x: 32.0, y: 32.0};
   
       let mut tile_storage = TileStorage::empty(tilemap_size);
-  
-      
-      let tile =  if (event.chunk_index.x+event.chunk_index.y).abs() % 2 > 0 {
-        0
-      } else {
-        3
-      };
+
   
       for y in 0..tilemap_size.y {
         for x in 0..tilemap_size.x {
-          // let tile =  if (y+x) % 2 > 0 {
-          //   0
-          // } else {
-          //   3
-          // };
           let tile_pos = TilePos { x, y};
             let tile_entity = commands
               .spawn()
               .insert_bundle(TileBundle {
                 position: tile_pos,
-                texture: TileTexture(tile),
                 tilemap_id: TilemapId(ground_tilemap_entity),
                 ..Default::default()
               })
@@ -82,7 +76,7 @@ pub fn spawn_chunk(
           ..Default::default()
         })
         .insert(Name::new(format!("Chunk {}:{}", event.chunk_index.x, event.chunk_index.y)))
-        .insert(TilemapChunk)
+        .insert(TilemapChunk(event.chunk_index))
         .with_children(|parent|{
   
           let text_alignment = TextAlignment::CENTER;
@@ -104,6 +98,10 @@ pub fn spawn_chunk(
       
       commands.entity(event.tilemap_entity).push_children(&[chunk]);
       tilemap.chunks.insert(event.chunk_index);
+      ew_init_chunk_event.send(InitChunkEvent {
+        tilemap: event.tilemap_entity,
+        index: event.chunk_index
+      })
     }
 
     

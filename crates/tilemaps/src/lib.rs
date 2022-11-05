@@ -1,7 +1,7 @@
-use bevy::{prelude::{Plugin, ResMut, Vec2, IVec2, Component}, sprite::Rect};
+use bevy::{prelude::{Plugin, Vec2, IVec2, Component, CoreStage}};
 use bevy_ecs_tilemap::TilemapPlugin;
 use chunks::{spawn_chunks_around_current, update_current_chunk, despawn_outbound_chunks};
-use spawn::{SpawnChunkEvent, spawn_chunk};
+use spawn::{SpawnChunkEvent, spawn_chunk, InitChunkEvent};
 
 pub mod chunks;
 pub mod spawn;
@@ -14,18 +14,18 @@ impl Plugin for ChunkedTilemapPlugin{
   fn build(&self, app: &mut bevy::prelude::App) {
     app
       .add_event::<SpawnChunkEvent>()
-      
+      .add_event::<InitChunkEvent>()
       .add_plugin(TilemapPlugin)
       .add_system(update_current_chunk)
       .add_system(despawn_outbound_chunks)
-      .add_system(spawn_chunk)
+      .add_system_to_stage(CoreStage::First, spawn_chunk)
       .add_system(spawn_chunks_around_current);
   }
 }
 
 
 #[derive(Component)]
-pub struct TilemapChunk;
+pub struct TilemapChunk(pub IVec2);
 
 pub struct Chunk{
   index: IVec2,
