@@ -21,7 +21,7 @@ pub fn spawn_chunk(
   mut commands: Commands,
   mut q_tilemaps: Query<&mut ChunkedTilemap>,
   mut ew_init_chunk_event: EventWriter<InitChunkEvent>,
-  asset_server: Res<AssetServer>,
+  #[cfg(feature = "dev-labels")] asset_server: Res<AssetServer>,
 ){
   for event in er_spawn_chunk.iter(){
     if let Ok(mut tilemap) = q_tilemaps.get_mut(event.tilemap_entity){
@@ -56,13 +56,7 @@ pub fn spawn_chunk(
         }
       }
       let transform = Transform::from_translation(event.chunk_possition.extend(0.));
-      info!(target: "chunk spawner", "spawning chunk {:?} on position {:?}", event.chunk_index, transform.translation);
-      let font = asset_server.load("../../../assets/fonts/FiraSans-Bold.ttf");
-      let text_style = TextStyle {
-          font,
-          font_size: 20.0,
-          color: Color::WHITE,
-      };
+      debug!(target: "chunk spawner", "spawning chunk {:?} on position {:?}", event.chunk_index, transform.translation);
   
       let chunk = commands
         .entity(ground_tilemap_entity)
@@ -79,22 +73,28 @@ pub fn spawn_chunk(
         .insert(TilemapChunk(event.chunk_index))
         .with_children(|parent|{
   
-          let text_alignment = TextAlignment::CENTER;
-          parent.spawn_bundle(Text2dBundle {
-            text: Text::from_section(format!("{}:{}", event.chunk_index.x, event.chunk_index.y), text_style.clone())
-              .with_alignment(text_alignment),
-            transform: Transform::from_xyz(
-              tile_size.x * (event.chunk_size.x-1) as f32 / 2.,
-              tile_size.y * (event.chunk_size.y-1) as f32 / 2.,
-              10.
-            ),
-            ..default()
-          });
+          
         }).id();
-        // .insert_bundle((
-        //   // GroundTilemap,
-        //   Name::new("Ground Tilemap")
-        // ));
+      #[cfg(feature = "dev-labels")]{
+        let font = asset_server.load("../../../assets/fonts/FiraSans-Bold.ttf");
+        let text_style = TextStyle {
+            font,
+            font_size: 20.0,
+            color: Color::WHITE,
+        };
+        let text_alignment = TextAlignment::CENTER;
+        let label = commands.spawn_bundle(Text2dBundle {
+          text: Text::from_section(format!("{}:{}", event.chunk_index.x, event.chunk_index.y), text_style.clone())
+            .with_alignment(text_alignment),
+          transform: Transform::from_xyz(
+            tile_size.x * (event.chunk_size.x-1) as f32 / 2.,
+            tile_size.y * (event.chunk_size.y-1) as f32 / 2.,
+            10.
+          ),
+          ..default()
+        }).id();
+        commands.entity(chunk).push_children(&[label]);
+      }
       
       commands.entity(event.tilemap_entity).push_children(&[chunk]);
       tilemap.chunks.insert(event.chunk_index);

@@ -10,3 +10,6 @@ bevy = { version = "0.8.0", features = ["dynamic"] }
 bevy_ecs_tilemap = { version = "0.8.0"}
 bevy_editor_pls = { git = "https://github.com/jakobhellermann/bevy_editor_pls"}
 rstest = "0.15.0"
+
+[features]
+dev-labels=[]
