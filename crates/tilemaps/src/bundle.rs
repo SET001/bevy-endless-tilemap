@@ -7,7 +7,8 @@ pub struct ChunkedTilemap{
   pub range: i32,
   pub center: Vec2,
   pub current_chunk: IVec2,
-  pub chunks: HashSet<IVec2>
+  pub chunks: HashSet<IVec2>,
+  pub texture_handle: Handle<Image>
 }
 
 #[derive(Default, Component)]

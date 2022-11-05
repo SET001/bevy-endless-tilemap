@@ -70,7 +70,7 @@ pub fn spawn_chunk(
           grid_size,
           size: tilemap_size,
           storage: tile_storage,
-          texture: TilemapTexture::Single(asset_server.load("../../../assets/images/grass_tiles.png").clone()),
+          texture: TilemapTexture::Single(tilemap.texture_handle.clone()),
           tile_size,
           transform,
           ..Default::default()

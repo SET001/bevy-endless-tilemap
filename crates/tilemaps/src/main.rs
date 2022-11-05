@@ -29,6 +29,7 @@ fn startup(
   mut commands: Commands,
   mut meshes: ResMut<Assets<Mesh>>,
   mut materials: ResMut<Assets<ColorMaterial>>,
+  asset_server: Res<AssetServer>,
 ){
   commands.spawn_bundle(Camera2dBundle::default()).insert(DefaultCamera);
   commands.spawn_bundle(MaterialMesh2dBundle {
@@ -45,6 +46,7 @@ fn startup(
       chunk_size: IVec2::new(CHUNK_SIZE, CHUNK_SIZE),
       tile_size: IVec2::new(TILE_SIZE, TILE_SIZE),
       range: 2,
+      texture_handle: asset_server.load("../../../assets/images/grass_tiles.png"),
       ..Default::default()
     },
     ..Default::default()
@@ -56,6 +58,7 @@ fn startup(
       chunk_size: IVec2::new(CHUNK_SIZE, CHUNK_SIZE),
       tile_size: IVec2::new(TILE_SIZE, TILE_SIZE),
       range: 2,
+      texture_handle: asset_server.load("../../../assets/images/tree_tiles.png"),
       ..Default::default()
     },
     spatial: SpatialBundle{
