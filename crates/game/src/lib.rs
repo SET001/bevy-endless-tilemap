@@ -1,4 +1,4 @@
-use bevy::{prelude::{Component, Handle, HandleUntyped}, sprite::TextureAtlas};
+use bevy::{prelude::{Component, Handle, HandleUntyped, Entity}, sprite::TextureAtlas};
 use perlin2d::PerlinNoise2D;
 pub mod states;
 pub mod player;
@@ -36,4 +36,10 @@ pub struct WorldNoise(pub PerlinNoise2D);
 pub struct AppConfig{
   pub tile_size: i32,
   pub chunk_size: i32
+}
+
+#[derive(Default)]
+pub struct TilemapLayers{
+  pub ground: Option<Entity>,
+  pub trees: Option<Entity>
 }

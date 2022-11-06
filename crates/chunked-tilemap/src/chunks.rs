@@ -17,8 +17,8 @@ pub fn update_current_chunk(
       tilemap.tile_size,
     );
     if tilemap.current_chunk != actually_current_chunk{
-      tilemap.current_chunk = actually_current_chunk;
-      info!("current chunk changed {}", tilemap.current_chunk);
+      tilemap.current_chunk = dbg!(actually_current_chunk);
+      // info!("current chunk changed {}", tilemap.current_chunk);
     }
   }
 }

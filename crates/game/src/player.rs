@@ -135,26 +135,31 @@ pub fn bind_camera_to_player(
 
 pub fn player_controls(
   mut q_player: Query<(&ActionState<PlayerAction>, &mut Transform, Option<&MoveDirection>), With<Player>>,
+  time: Res<Time>,
 ){
-  let speed = 2.;
+  let speed = 2.5;
+  let step: f32 = 1./60.;
+  let delta = time.delta_seconds();
+  let update_step = delta/step*speed;
   
   let (action_state, mut player_transform, move_direction) = q_player.single_mut();
-  if (move_direction.is_some()){
+  if move_direction.is_some(){
 
   } else {
     if action_state.pressed(PlayerAction::MoveRight) {
-      player_transform.translation.x+=speed;
+      player_transform.translation.x+=update_step;
     }
     if action_state.pressed(PlayerAction::MoveLeft) {
-      player_transform.translation.x-=speed;
+      player_transform.translation.x-=update_step;
     }
     if action_state.pressed(PlayerAction::MoveUp) {
-      player_transform.translation.y+=speed;
+      player_transform.translation.y+=update_step;
     }
     if action_state.pressed(PlayerAction::MoveDown) {
-      player_transform.translation.y-=speed;
+      player_transform.translation.y-=update_step;
     }
   }
+  //player_transform.translation.x+=speed;
 }
 
 pub fn despawn_player(){
