@@ -1,7 +1,7 @@
-use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+use bevy::{prelude::*};
 use chunked_tilemap::bundle::ChunkedTilemap;
 
-use crate::{GameStates, player::{spawn_player, player_controls, bind_camera_to_player}, AppConfig, GroundTilemap, TilemapLayers, DefaultCamera, };
+use crate::{GameStates, player::{spawn_player, player_controls, bind_camera_to_player}, DefaultCamera, };
 
 pub struct GameStatePlugin;
 
@@ -18,28 +18,28 @@ impl Plugin for GameStatePlugin {
           .with_system(bind_camera_to_player)
           .with_system(player_controls)
           .with_system(update_tilemaps)
-          .with_system(restart)
+          // .with_system(restart)
         );
   }
 }
 fn start(
-  mut commands: Commands,
-  mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+  // mut commands: Commands,
+  // mut meshes: ResMut<Assets<Mesh>>,
+  //   mut materials: ResMut<Assets<ColorMaterial>>,
 ){
   info!("entering game state");
 }
 
-fn restart(
-  mut buttons: ResMut<Input<MouseButton>>,
-  mut app_state: ResMut<State<GameStates>>,
-){
-  // if buttons.just_released(MouseButton::Left) {
-  //   info!("button is just released in game state");
-  //   buttons.clear();
-  //   app_state.set(GameStates::Init).unwrap();
-  // }
-}
+// fn restart(
+//   mut buttons: ResMut<Input<MouseButton>>,
+//   mut app_state: ResMut<State<GameStates>>,
+// ){
+//   // if buttons.just_released(MouseButton::Left) {
+//   //   info!("button is just released in game state");
+//   //   buttons.clear();
+//   //   app_state.set(GameStates::Init).unwrap();
+//   // }
+// }
 
 fn update_tilemaps(
   mut q_tilemaps: Query<&mut ChunkedTilemap>,

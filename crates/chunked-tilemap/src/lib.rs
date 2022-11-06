@@ -5,7 +5,6 @@ use spawn::{SpawnChunkEvent, spawn_chunk, InitChunkEvent};
 
 pub mod chunks;
 pub mod spawn;
-pub mod despawn;
 pub mod bundle;
 
 pub struct ChunkedTilemapPlugin;
@@ -26,21 +25,6 @@ impl Plugin for ChunkedTilemapPlugin{
 
 #[derive(Component)]
 pub struct TilemapChunk(pub IVec2);
-
-pub struct Chunk{
-  index: IVec2,
-  position: Vec2
-}
-
-pub fn is_chunk_updated(
-  current_chunk: Chunk,
-  current_position: Vec2
-) -> Option<IVec2> {
-  // if !current_position in current_chunk{
-    // current_position.dot(rhs)
-  // };
-  None
-}
 
 pub fn is_point_in_rect(
   rect_pos: Vec2,

@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use bevy_ecs_tilemap::{prelude::{TilemapSize, TilemapGridSize, TilemapTileSize, TilemapTexture, TilemapId}, tiles::{TileStorage, TileTexture, TilePos, TileBundle}, TilemapBundle};
+use bevy_ecs_tilemap::{prelude::{TilemapSize, TilemapGridSize, TilemapTileSize, TilemapTexture, TilemapId}, tiles::{TileStorage, TilePos, TileBundle}, TilemapBundle};
 
 use crate::{TilemapChunk, bundle::ChunkedTilemap};
 
@@ -71,10 +71,7 @@ pub fn spawn_chunk(
         })
         .insert(Name::new(format!("Chunk {}:{}", event.chunk_index.x, event.chunk_index.y)))
         .insert(TilemapChunk(event.chunk_index))
-        .with_children(|parent|{
-  
-          
-        }).id();
+        .id();
       #[cfg(feature = "dev-labels")]{
         let font = asset_server.load("../../../assets/fonts/FiraSans-Bold.ttf");
         let text_style = TextStyle {

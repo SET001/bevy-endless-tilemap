@@ -1,6 +1,6 @@
 use bevy::asset::diagnostic::AssetCountDiagnosticsPlugin;
 use bevy::diagnostic::EntityCountDiagnosticsPlugin;
-use bevy::window::{PresentMode, WindowMode};
+use bevy::window::{PresentMode};
 use bevy::{asset::AssetServerSettings, diagnostic::FrameTimeDiagnosticsPlugin};
 use bevy::prelude::*;
 

@@ -87,7 +87,6 @@ pub struct PlayerBundle{
 }
 pub fn spawn_player(
   mut commands: Commands,
-  q_camera: Query<Entity, With<Camera2d>>,
   texture_handles: Res<TextureAtlases>,
 ){
   

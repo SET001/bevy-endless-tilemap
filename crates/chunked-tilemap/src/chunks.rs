@@ -1,4 +1,4 @@
-use bevy::{prelude::*, utils::HashSet};
+use bevy::{prelude::*};
 
 use crate::{spawn::SpawnChunkEvent, TilemapChunk, bundle::ChunkedTilemap};
 
@@ -98,7 +98,6 @@ pub fn get_chunk_center(
 mod test{
   use bevy::prelude::*;
   use rstest::rstest;
-  use crate::chunks::get_chunk_center;
 
   // #[rstest]
   // #[case(1, (0, 0), (0., 0.))]
