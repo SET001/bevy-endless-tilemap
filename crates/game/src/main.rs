@@ -24,7 +24,7 @@ fn main() {
     .init_resource::<TextureAtlases>()
     .insert_resource(AssetServerSettings {
       watch_for_changes: true,
-      asset_folder: "../../assets".to_string(),
+      asset_folder: format!("{}/assets", std::env::current_dir().unwrap().to_str().unwrap()),
       ..Default::default()
     })
     .add_plugins(DefaultPlugins)
@@ -40,6 +40,7 @@ fn main() {
 fn startup(
   mut commands: Commands,
 ){
+  
   let mut rng = thread_rng();
   let seed = rng.gen_range(0..2000);
   info!("generating perlin noise");

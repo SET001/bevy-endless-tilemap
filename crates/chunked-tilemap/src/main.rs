@@ -1,4 +1,4 @@
-use bevy::{prelude::*, DefaultPlugins, sprite::MaterialMesh2dBundle, input::mouse::MouseMotion};
+use bevy::{prelude::*, DefaultPlugins, sprite::MaterialMesh2dBundle, input::mouse::MouseMotion, asset::AssetServerSettings};
 use bevy_ecs_tilemap::tiles::{TileStorage, TilePos, TileTexture, TileVisible};
 use bevy_editor_pls::EditorPlugin;
 use chunked_tilemap::{ChunkedTilemapPlugin, bundle::{ChunkedTilemapBundle, ChunkedTilemap}, spawn::InitChunkEvent, TilemapChunk};
@@ -15,6 +15,11 @@ fn main() {
   let mut app = App::new();
   app
   .init_resource::<TilemapLayers>()
+  .insert_resource(AssetServerSettings {
+    watch_for_changes: true,
+    asset_folder: format!("{}/assets", std::env::current_dir().unwrap().to_str().unwrap()),
+    ..Default::default()
+  })
   .add_plugins(DefaultPlugins)
   .add_plugin(ChunkedTilemapPlugin)
   .add_plugin(EditorPlugin)
@@ -54,7 +59,7 @@ fn startup(
       chunk_size: IVec2::new(CHUNK_SIZE, CHUNK_SIZE),
       tile_size: IVec2::new(TILE_SIZE, TILE_SIZE),
       range: 2,
-      texture_handle: asset_server.load("../../../assets/images/grass_tiles.png"),
+      texture_handle: asset_server.load("images/grass_tiles.png"),
       ..Default::default()
     },
     ..Default::default()
@@ -66,7 +71,7 @@ fn startup(
       chunk_size: IVec2::new(CHUNK_SIZE, CHUNK_SIZE),
       tile_size: IVec2::new(TILE_SIZE, TILE_SIZE),
       range: 2,
-      texture_handle: asset_server.load("../../../assets/images/tree_tiles.png"),
+      texture_handle: asset_server.load("images/tree_tiles.png"),
       ..Default::default()
     },
     spatial: SpatialBundle{
