@@ -1,14 +1,15 @@
 use bevy::asset::diagnostic::AssetCountDiagnosticsPlugin;
 use bevy::diagnostic::EntityCountDiagnosticsPlugin;
-use bevy::window::{PresentMode};
+use bevy::window::{PresentMode, WindowMode};
 use bevy::{asset::AssetServerSettings, diagnostic::FrameTimeDiagnosticsPlugin};
 use bevy::prelude::*;
 
-use bevy_ecs_tilemap::tiles::{TileTexture, TileStorage, TileVisible, TilePos};
+use bevy_ecs_tilemap::tiles::{TileTexture, TilePos, TileBundle};
 use bevy_editor_pls::EditorPlugin;
+use chunked_tilemap::spawn::{SpawnChunkEvent, PrepareChunkEvent};
 use chunked_tilemap::{
   ChunkedTilemapPlugin,
-  bundle::{ChunkedTilemap, ChunkedTilemapBundle}, spawn::InitChunkEvent, TilemapChunk
+  bundle::{ChunkedTilemap, ChunkedTilemapBundle}
 };
 use game::{AssetsLoading, TilemapLayers};
 use game::DefaultCamera;
@@ -21,7 +22,7 @@ use leafwing_input_manager::prelude::InputManagerPlugin;
 use perlin2d::PerlinNoise2D;
 use rand::{thread_rng, Rng};
 
-const TILE_SIZE: i32 = 32;
+const TILE_SIZE: f32 = 32.;
 
 fn main() {
   let mut app = App::new();
@@ -37,7 +38,7 @@ fn main() {
     })
     .insert_resource(WindowDescriptor{
       title: "Bevy app!".to_string(),
-      // mode: WindowMode::Fullscreen,
+      mode: WindowMode::Fullscreen,
       present_mode: PresentMode::AutoVsync,
       ..default()
   })
@@ -53,8 +54,10 @@ fn main() {
     .add_plugin(EditorPlugin)
     .add_plugins(GameStatesPlugins)
     .add_state(GameStates::Load)
-    // .add_system(init_grass_chunk)
-    .add_system(init_trees_chunk);
+    .add_system(init_grass_chunk)
+    .add_system(init_trees_chunk)
+    // .add_system(on_window_resize)
+    ;
   app.run();
 }
 
@@ -84,18 +87,24 @@ fn startup(
   commands.spawn_bundle(Camera2dBundle::default()).insert(DefaultCamera);
 
   let primary_window = windows.get_primary().expect("no primary window");
-  let chunk_size = IVec2::new(
-    (primary_window.width()/TILE_SIZE as f32).round() as i32,
-    (primary_window.height()/TILE_SIZE as f32).round() as i32
+  let chunk_size = UVec2::new(
+    (primary_window.width()/TILE_SIZE as f32).round() as u32,
+    (primary_window.height()/TILE_SIZE as f32).round() as u32
   );
 
+  // let chunk_size = IVec2::new(
+  //   10,
+  //   10
+  // );
+
+  info!("window size: {}x{}", primary_window.width(), primary_window.height());
   info!("chunk_size: {chunk_size}");
 
   tilemap_layers.ground = Some(commands.spawn_bundle(ChunkedTilemapBundle{
     name: Name::new("Ground layer"),
     chunked_tilemap: ChunkedTilemap{
       chunk_size,
-      tile_size: IVec2::new(TILE_SIZE, TILE_SIZE),
+      tile_size: Vec2::new(TILE_SIZE, TILE_SIZE),
       range: 1,
       texture_handle: asset_server.load("images/grass_tiles.png"),
       ..Default::default()
@@ -107,7 +116,7 @@ fn startup(
     name: Name::new("Trees layer"),
     chunked_tilemap: ChunkedTilemap{
       chunk_size,
-      tile_size: IVec2::new(TILE_SIZE, TILE_SIZE),
+      tile_size: Vec2::new(TILE_SIZE, TILE_SIZE),
       range: 1,
       texture_handle: asset_server.load("images/tree_tiles.png"),
       ..Default::default()
@@ -121,79 +130,80 @@ fn startup(
 }
 
 fn init_trees_chunk(
-  mut er_init_ground_chunk: EventReader<InitChunkEvent>,
-  q_tilemaps: Query<(&mut ChunkedTilemap, &Name, &Children)>,
-  q_chunk: Query<(&TileStorage, &TilemapChunk)>,
-  mut q_tile: Query<(&mut TileTexture, &mut TileVisible)>,
+  mut er_prepare_chunk: EventReader<PrepareChunkEvent>,
+  mut ew_spawn_chunk: EventWriter<SpawnChunkEvent>,
+  tilemap_layers: Res<TilemapLayers>,
+  q_tilemaps: Query<&mut ChunkedTilemap>,
   perlin: Res<WorldNoise>
 ){
-  for event in er_init_ground_chunk.iter(){
-    let (tilemap, name, children) = q_tilemaps.get(event.tilemap).unwrap();
-    if name.to_string() == "Trees layer".to_string(){
-      for &child in children.iter(){
-        if let Ok((tile_storage, tilemap_chunk)) = q_chunk.get(child){
-          if tilemap_chunk.0 == event.index{
-
-            for x in 0..tilemap.chunk_size.x{
-              for y in 0..tilemap.chunk_size.y{
-                if let Some(tile) = tile_storage.get(&TilePos{
-                  x: x as u32,
-                  y: y as u32
-                }){
-                  let (mut tile_texture, mut tile_visible) = q_tile.get_mut(tile).unwrap();
-                  let offset = event.index * tilemap.chunk_size*tilemap.tile_size+IVec2::new(x, y)*tilemap.tile_size;
-                  if perlin.0.get_noise(offset.x.into(), offset.y.into()) > 8.  {
-                    let mut rng = thread_rng();
-                    let tile = rng.gen_range(0..20);
-                    tile_texture.0 = tile;
-                    tile_visible.0 = true;
-                  } else {
-                    tile_visible.0 = false;
-                  };
-                }
-              }
-            }
-          }
+  let init_ground_chunk_events = er_prepare_chunk.iter().filter(|event| event.tilemap_entity == tilemap_layers.trees.unwrap());
+  for event in init_ground_chunk_events{
+    let tilemap = q_tilemaps.get(event.tilemap_entity).expect("no tilemap");
+    let mut bundles = vec![];
+    for x in 0..tilemap.chunk_size.x{
+      for y in 0..tilemap.chunk_size.y{
+        if perlin.0.get_noise(
+          (event.chunk_index.x as f64) * (tilemap.chunk_size.x as f64)+(x as f64)*(tilemap.tile_size.x as f64),
+          (event.chunk_index.y as f64) * (tilemap.chunk_size.y as f64)+(y as f64)*(tilemap.tile_size.y as f64)
+        ) > 8.  {
+          let mut rng = thread_rng();
+          let tile_index = rng.gen_range(0..20);
+          bundles.push(TileBundle {
+            position: TilePos { x, y},
+            texture: TileTexture(tile_index),
+            ..Default::default()
+          });
         }
       }
     }
+    ew_spawn_chunk.send(SpawnChunkEvent{
+      bundles,
+      tilemap_entity: event.tilemap_entity,
+      chunk_index: event.chunk_index
+    })
   }
 }
 
-// fn init_grass_chunk(
-//   mut er_init_ground_chunk: EventReader<InitChunkEvent>,
-//   q_tilemaps: Query<(&mut ChunkedTilemap, &Name, &Children)>,
-//   q_chunk: Query<(&TileStorage, &TilemapChunk)>,
-//   mut q_tile: Query<(&mut TileTexture, &mut TileVisible)>,
-//   perlin: Res<WorldNoise>
-// ){
-//   for event in er_init_ground_chunk.iter(){
-//     let (tilemap, name, children) = q_tilemaps.get(event.tilemap).unwrap();
-//     if name.to_string() == "Trees layer".to_string(){
-//       for &child in children.iter(){
-//         if let Ok((tile_storage, tilemap_chunk)) = q_chunk.get(child){
-//           if tilemap_chunk.0 == event.index{
+fn init_grass_chunk(
+  mut er_prepare_chunk: EventReader<PrepareChunkEvent>,
+  mut ew_spawn_chunk: EventWriter<SpawnChunkEvent>,
+  tilemap_layers: Res<TilemapLayers>,
+  q_tilemaps: Query<&mut ChunkedTilemap>,
+){
+  let init_chunk_events = er_prepare_chunk.iter().filter(|event| event.tilemap_entity == tilemap_layers.ground.unwrap());
+  for event in init_chunk_events{
+    let tilemap = q_tilemaps.get(event.tilemap_entity).expect("no tilemap");
+    let mut bundles = vec![];
+    for x in 0..tilemap.chunk_size.x{
+      for y in 0..tilemap.chunk_size.y{
+        bundles.push(TileBundle {
+          position: TilePos { x, y},
+          ..Default::default()
+        });
+      }
+    }
+    ew_spawn_chunk.send(SpawnChunkEvent{
+      bundles,
+      tilemap_entity: event.tilemap_entity,
+      chunk_index: event.chunk_index
+    })
+  }
+}
 
-//             for x in 0..tilemap.chunk_size.x{
-//               for y in 0..tilemap.chunk_size.y{
-//                 if let Some(tile) = tile_storage.get(&TilePos{
-//                   x: x as u32,
-//                   y: y as u32
-//                 }){
-//                   let (mut tile_texture, mut tile_visible) = q_tile.get_mut(tile).unwrap();
-//                   let offset = event.index * tilemap.chunk_size*tilemap.tile_size+IVec2::new(x, y)*tilemap.tile_size;
-//                   if perlin.0.get_noise(offset.x.into(), offset.y.into()) > 0.  {
-//                     tile_texture.0 = 10;
-//                     tile_visible.0 = true;
-//                   } else {
-//                     tile_visible.0 = false;
-//                   };
-//                 }
-//               }
-//             }
-//           }
-//         }
-//       }
+
+// fn on_window_resize(
+//   mut e_resized: EventReader<WindowResized>,
+//   mut q_tilemaps: Query<&mut ChunkedTilemap>,
+//   windows: Res<Windows>,
+// ){
+//   for _ in e_resized.iter(){
+//     let window = windows.get_primary().expect("no primary window");
+//     info!("window resized: {}x{}", window.width(), window.height());
+//     for mut tilemap in q_tilemaps.iter_mut(){
+//       tilemap.chunk_size = IVec2::new(
+//         (window.width()/TILE_SIZE as f32).round() as i32,
+//         (window.height()/TILE_SIZE as f32).round() as i32
+//       );
 //     }
 //   }
 // }

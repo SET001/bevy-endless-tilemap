@@ -2,8 +2,8 @@ use bevy::{prelude::*, utils::HashSet};
 
 #[derive(Default, Component, Clone)]
 pub struct ChunkedTilemap{
-  pub chunk_size:  IVec2,
-  pub tile_size: IVec2,
+  pub chunk_size:  UVec2,
+  pub tile_size: Vec2,
   pub range: i32,
   pub center: Vec2,
   pub current_chunk: IVec2,

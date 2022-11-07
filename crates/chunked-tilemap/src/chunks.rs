@@ -1,11 +1,6 @@
 use bevy::{prelude::*};
 
-use crate::{spawn::SpawnChunkEvent, TilemapChunk, bundle::ChunkedTilemap};
-
-// pub struct Chunk{
-//   position: Vec2,
-//   index: IVec2
-// }
+use crate::{spawn::{PrepareChunkEvent}, TilemapChunk, bundle::ChunkedTilemap};
 
 pub fn update_current_chunk(
   mut q_tilemaps: Query<&mut ChunkedTilemap>,
@@ -17,33 +12,24 @@ pub fn update_current_chunk(
       tilemap.tile_size,
     );
     if tilemap.current_chunk != actually_current_chunk{
-      tilemap.current_chunk = dbg!(actually_current_chunk);
-      // info!("current chunk changed {}", tilemap.current_chunk);
+      tilemap.current_chunk = actually_current_chunk;
+      info!("current chunk changed {}", tilemap.current_chunk);
     }
   }
 }
 
 pub fn spawn_chunks_around_current(
-  mut ew_spawn_chunk: EventWriter<SpawnChunkEvent>,
+  mut ew_prepare_chunk: EventWriter<PrepareChunkEvent>,
   q_tilemaps: Query<(&ChunkedTilemap, Entity)>
 ){
   for (tilemap, entity) in q_tilemaps.iter(){
-
-    let chunk_size = tilemap.chunk_size;
-    let tile_size = tilemap.tile_size;
     for y in (tilemap.current_chunk.y - tilemap.range)..=(tilemap.current_chunk.y + tilemap.range) {
       for x in (tilemap.current_chunk.x - tilemap.range)..=(tilemap.current_chunk.x + tilemap.range) {
         let index = IVec2::new(x, y);
         if !tilemap.chunks.contains(&index){
-          ew_spawn_chunk.send(SpawnChunkEvent {
-            chunk_size: chunk_size,
+          info!("Spawning chunk init event for {:#?}", entity);
+          ew_prepare_chunk.send(PrepareChunkEvent {
             tilemap_entity: entity,
-            tile_size: tile_size,
-            chunk_possition: get_chunk_center(
-              chunk_size,
-              tile_size,
-              IVec2::new(x, y)
-            ),
             chunk_index: index
           });
         }
@@ -75,22 +61,22 @@ pub fn despawn_outbound_chunks(
   }
 }
 
-pub fn get_chunk_at_position(position: Vec2, chunk_size: IVec2, tile_size: IVec2,)->IVec2{
+pub fn get_chunk_at_position(position: Vec2, chunk_size: UVec2, tile_size: Vec2,)->IVec2{
   return IVec2::new(
-    (position.x/(tile_size.x*chunk_size.x) as f32).round() as i32,
-    (-position.y/(tile_size.y*chunk_size.y) as f32).round() as i32,
+    (position.x/(tile_size.x*chunk_size.x as f32)).round() as i32,
+    (-position.y/(tile_size.y*chunk_size.y as f32)).round() as i32,
   )
 }
 
 
 pub fn get_chunk_center(
-  chunk_size: IVec2,
-  tile_size: IVec2,
+  chunk_size: UVec2,
+  tile_size: Vec2,
   relative_position: IVec2,
 )->Vec2{
   Vec2::new(
-    (-tile_size.x*((chunk_size.x-1)/2)) as f32 + ((relative_position.x)*tile_size.x*chunk_size.x) as f32,
-    (-tile_size.y*((chunk_size.y-1)/2)) as f32 + ((-relative_position.y)*tile_size.y*chunk_size.y) as f32
+    -tile_size.x*((chunk_size.x-1)/2) as f32 + ((relative_position.x  as f32)*tile_size.x*chunk_size.x as f32),
+    -tile_size.y*((chunk_size.y-1)/2) as f32 + ((-relative_position.y as f32)*tile_size.y*chunk_size.y as f32)
   )
 }
 
@@ -164,7 +150,7 @@ mod test{
   ){
     assert_eq!(super::get_chunk_at_position(
       Vec2::from(position)
-      , IVec2::new(10, 10), IVec2::new(32, 32)
+      , UVec2::new(10, 10), Vec2::new(32., 32.)
     ), IVec2::from(expected));
   }
 }
