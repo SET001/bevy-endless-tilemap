@@ -1,4 +1,5 @@
 use bevy::{prelude::*};
+use bevy_ecs_tilemap::{prelude::TilemapId};
 
 use crate::{spawn::{PrepareChunkEvent}, TilemapChunk, bundle::ChunkedTilemap};
 
@@ -58,6 +59,15 @@ pub fn despawn_outbound_chunks(
         }
       }
     }
+  }
+}
+
+pub fn nest_chunks(
+  mut commands: Commands,
+  added: Query<(Entity,&TilemapId),  Added<TilemapId>>
+){
+  for (entity, tilemap) in added.iter(){
+    commands.entity(tilemap.0).add_child(entity);
   }
 }
 

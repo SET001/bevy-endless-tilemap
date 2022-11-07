@@ -1,6 +1,6 @@
-use bevy::{prelude::{Plugin, Vec2, IVec2, Component, CoreStage}};
+use bevy::{prelude::{Plugin, Vec2, IVec2, Component, CoreStage, ParallelSystemDescriptorCoercion}};
 use bevy_ecs_tilemap::TilemapPlugin;
-use chunks::{spawn_chunks_around_current, update_current_chunk, despawn_outbound_chunks};
+use chunks::{spawn_chunks_around_current, update_current_chunk, despawn_outbound_chunks, nest_chunks};
 use spawn::{SpawnChunkEvent, spawn_chunk, PrepareChunkEvent};
 
 pub mod chunks;
@@ -18,6 +18,7 @@ impl Plugin for ChunkedTilemapPlugin{
       .add_system(update_current_chunk)
       .add_system(despawn_outbound_chunks)
       .add_system(spawn_chunk)
+      .add_system(nest_chunks.after(spawn_chunk))
       .add_system_to_stage(CoreStage::First, spawn_chunks_around_current);
   }
 }
