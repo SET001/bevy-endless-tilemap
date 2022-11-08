@@ -6,6 +6,7 @@ use bevy::prelude::*;
 
 use bevy_ecs_tilemap::tiles::{TileTexture, TilePos, TileBundle};
 use bevy_editor_pls::EditorPlugin;
+use chunked_tilemap::chunks::local_tile_index_to_global;
 use chunked_tilemap::spawn::{SpawnChunkEvent, PrepareChunkEvent};
 use chunked_tilemap::{
   ChunkedTilemapPlugin,
@@ -138,11 +139,17 @@ fn init_trees_chunk(
     let mut bundles = vec![];
     for x in 0..tilemap.chunk_size.x{
       for y in 0..tilemap.chunk_size.y{
-        if perlin.0.get_noise(
-          
-          (event.chunk_index.x as f64) * (tilemap.chunk_size.x as f64)+(x as f64)*(tilemap.tile_size.x as f64),
-          (event.chunk_index.y as f64) * (tilemap.chunk_size.y as f64)+(y as f64)*(tilemap.tile_size.y as f64)
-        ) > 8.  {
+        let noise_index = local_tile_index_to_global(
+          event.chunk_index,
+          tilemap.chunk_size,
+          IVec2::new(x as i32, y as i32)
+        );
+        let noise = perlin.0.get_noise(
+          noise_index.x as f64,
+          noise_index.y as f64
+        );
+
+        if noise > 1.  {
           let mut rng = thread_rng();
           let tile_index = rng.gen_range(0..20);
           bundles.push(TileBundle {
@@ -175,9 +182,14 @@ fn init_ground_chunk(
     let mut bundles = vec![];
     for x in 0..tilemap.chunk_size.x{
       for y in 0..tilemap.chunk_size.y{
+        let noise_index = local_tile_index_to_global(
+          event.chunk_index,
+          tilemap.chunk_size,
+          IVec2::new(x as i32, y as i32)
+        );
         let tile_index = if perlin.0.get_noise(
-          (event.chunk_index.x as f64) * (tilemap.chunk_size.x as f64)+(x as f64)*(tilemap.tile_size.x as f64),
-          (event.chunk_index.y as f64) * (tilemap.chunk_size.y as f64)+(y as f64)*(tilemap.tile_size.y as f64)
+          noise_index.x as f64,
+          noise_index.y as f64
         ) > -5.  {
           let dark_gras_tiles = [3, 5, 7, 11, 13, 15, 17, 19, 21, 23, 25, 27];
           dark_gras_tiles[rng.gen_range(0..dark_gras_tiles.len())]
