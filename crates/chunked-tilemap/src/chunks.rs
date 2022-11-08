@@ -64,17 +64,21 @@ pub fn despawn_outbound_chunks(
 
 pub fn nest_chunks(
   mut commands: Commands,
-  added: Query<(Entity,&TilemapId),  Added<TilemapId>>
+  added: Query<(Entity,&TilemapId),  (Added<TilemapId>, Without<Parent>)>
 ){
-  for (entity, tilemap) in added.iter(){
-    commands.entity(tilemap.0).add_child(entity);
+  if added.iter().count() > 0 {
+    println!("fixed nesting of {} items", added.iter().count());
+    for (entity, tilemap) in added.iter(){
+  
+      commands.entity(tilemap.0).push_children(&[entity]);
+    }
   }
 }
 
 pub fn get_chunk_at_position(position: Vec2, chunk_size: UVec2, tile_size: Vec2,)->IVec2{
   return IVec2::new(
-    (position.x/(tile_size.x*chunk_size.x as f32)).round() as i32,
-    (-position.y/(tile_size.y*chunk_size.y as f32)).round() as i32,
+    (position.x/(tile_size.x*chunk_size.x as f32)).ceil() as i32,
+    (-position.y/(tile_size.y*chunk_size.y as f32)).ceil() as i32,
   )
 }
 
@@ -88,6 +92,17 @@ pub fn get_chunk_center(
     -tile_size.x*((chunk_size.x-1)/2) as f32 + ((relative_position.x  as f32)*tile_size.x*chunk_size.x as f32),
     -tile_size.y*((chunk_size.y-1)/2) as f32 + ((-relative_position.y as f32)*tile_size.y*chunk_size.y as f32)
   )
+}
+
+pub fn local_tile_index_to_global(
+  chunk_index: IVec2,
+  chunk_size: UVec2,
+  local_tile_index: IVec2 //  relative to chunk
+)->IVec2{
+  IVec2 {
+    x: local_tile_index.x-((chunk_size.x) as f32/2.).floor() as i32 + chunk_index.x*(chunk_size.x as i32),
+    y: -local_tile_index.y+((chunk_size.y) as f32/2.).floor() as i32  + chunk_index.y*(chunk_size.y as i32)
+  }
 }
 
 #[cfg(test)]
@@ -162,5 +177,30 @@ mod test{
       Vec2::from(position)
       , UVec2::new(10, 10), Vec2::new(32., 32.)
     ), IVec2::from(expected));
+  }
+
+  const tile_size: i32 =  32;
+  const CHUNK_SIZE: UVec2 = UVec2{x: 5, y: 5};
+
+  #[rstest]
+  #[case(IVec2::new(0, 0), IVec2::new(0, 0), (-2, 2))]
+  #[case(IVec2::new(0, 0), IVec2::new(2, 2), (0, 0))]
+  #[case(IVec2::new(0, 0), IVec2::new(4, 4), (2, -2))]
+
+  #[case(IVec2::new(1, 0), IVec2::new(0, 0), (3, 2))]
+  #[case(IVec2::new(1, 0), IVec2::new(2, 2), (5, 0))]
+  #[case(IVec2::new(1, 0), IVec2::new(4, 4), (7, -2))]
+
+  fn local_tile_index_to_global_test(
+    #[case] chunk_index: IVec2,
+    #[case] tile_index: IVec2,
+    #[case] expected: (i32, i32),
+  ){
+    let local_index = super::local_tile_index_to_global(
+      chunk_index,
+      CHUNK_SIZE,
+      tile_index,
+    );
+    assert_eq!(local_index, IVec2::from(expected));
   }
 }

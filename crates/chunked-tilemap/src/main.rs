@@ -3,7 +3,7 @@ use bevy_ecs_tilemap::{tiles::{TilePos, TileTexture, TileBundle}};
 use bevy_editor_pls::EditorPlugin;
 use chunked_tilemap::{ChunkedTilemapPlugin, bundle::{ChunkedTilemapBundle, ChunkedTilemap}, spawn::{PrepareChunkEvent, SpawnChunkEvent}};
 
-const CHUNK_SIZE: u32 = 5;
+const CHUNK_SIZE: u32 = 15;
 const TILE_SIZE: f32 = 32.;
 
 #[derive(Default)]
@@ -58,7 +58,7 @@ fn startup(
     chunked_tilemap: ChunkedTilemap{
       chunk_size: UVec2::new(CHUNK_SIZE, CHUNK_SIZE),
       tile_size: Vec2::new(TILE_SIZE, TILE_SIZE),
-      range: 2,
+      range: 1,
       texture_handle: asset_server.load("images/grass_tiles.png"),
       ..Default::default()
     },
@@ -70,7 +70,7 @@ fn startup(
     chunked_tilemap: ChunkedTilemap{
       chunk_size: UVec2::new(CHUNK_SIZE, CHUNK_SIZE),
       tile_size: Vec2::new(TILE_SIZE, TILE_SIZE),
-      range: 2,
+      range: 1,
       texture_handle: asset_server.load("images/tree_tiles.png"),
       ..Default::default()
     },
