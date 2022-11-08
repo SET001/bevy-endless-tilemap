@@ -77,8 +77,8 @@ pub fn nest_chunks(
 
 pub fn get_chunk_at_position(position: Vec2, chunk_size: UVec2, tile_size: Vec2,)->IVec2{
   return IVec2::new(
-    (position.x/(tile_size.x*chunk_size.x as f32)).ceil() as i32,
-    (-position.y/(tile_size.y*chunk_size.y as f32)).ceil() as i32,
+    (position.x/(tile_size.x*chunk_size.x as f32)).round() as i32,
+    (-position.y/(tile_size.y*chunk_size.y as f32)).round() as i32,
   )
 }
 
