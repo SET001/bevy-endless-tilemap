@@ -11,11 +11,7 @@ use chunked_tilemap::{
   ChunkedTilemapPlugin,
   bundle::{ChunkedTilemap, ChunkedTilemapBundle}
 };
-use game::{AssetsLoading, TilemapLayers};
-use game::DefaultCamera;
-use game::GameStates;
-use game::TextureAtlases;
-use game::WorldNoise;
+use game::{AssetsLoading, TilemapLayers, DefaultCamera, GameStates, TextureAtlases, WorldNoise};
 use game::player::PlayerAction;
 use game::states::GameStatesPlugins;
 use leafwing_input_manager::prelude::InputManagerPlugin;
@@ -38,7 +34,7 @@ fn main() {
     })
     .insert_resource(WindowDescriptor{
       title: "Bevy app!".to_string(),
-      mode: WindowMode::Fullscreen,
+      // mode: WindowMode::Fullscreen,
       present_mode: PresentMode::AutoVsync,
       ..default()
   })
@@ -54,10 +50,9 @@ fn main() {
     .add_plugin(EditorPlugin)
     .add_plugins(GameStatesPlugins)
     .add_state(GameStates::Load)
-    .add_system(init_grass_chunk)
-    .add_system(init_trees_chunk)
+    .add_system_to_stage(CoreStage::PreUpdate, init_ground_chunk)
+    .add_system_to_stage(CoreStage::PreUpdate, init_trees_chunk);
     // .add_system(on_window_resize)
-    ;
   app.run();
 }
 
@@ -71,6 +66,7 @@ fn startup(
   
   let mut rng = thread_rng();
   let seed = rng.gen_range(0..2000);
+  let seed = 123;
   info!("generating perlin noise");
   let perlin = PerlinNoise2D::new(
     6,
@@ -92,9 +88,9 @@ fn startup(
     (primary_window.height()/TILE_SIZE as f32).round() as u32
   );
 
-  // let chunk_size = IVec2::new(
-  //   10,
-  //   10
+  // let chunk_size = UVec2::new(
+  //   5,
+  //   5
   // );
 
   info!("window size: {}x{}", primary_window.width(), primary_window.height());
@@ -136,13 +132,14 @@ fn init_trees_chunk(
   q_tilemaps: Query<&mut ChunkedTilemap>,
   perlin: Res<WorldNoise>
 ){
-  let init_ground_chunk_events = er_prepare_chunk.iter().filter(|event| event.tilemap_entity == tilemap_layers.trees.unwrap());
-  for event in init_ground_chunk_events{
+  let init_chunk_events = er_prepare_chunk.iter().filter(|event| event.tilemap_entity == tilemap_layers.trees.unwrap());
+  for event in init_chunk_events{
     let tilemap = q_tilemaps.get(event.tilemap_entity).expect("no tilemap");
     let mut bundles = vec![];
     for x in 0..tilemap.chunk_size.x{
       for y in 0..tilemap.chunk_size.y{
         if perlin.0.get_noise(
+          
           (event.chunk_index.x as f64) * (tilemap.chunk_size.x as f64)+(x as f64)*(tilemap.tile_size.x as f64),
           (event.chunk_index.y as f64) * (tilemap.chunk_size.y as f64)+(y as f64)*(tilemap.tile_size.y as f64)
         ) > 8.  {
@@ -164,20 +161,32 @@ fn init_trees_chunk(
   }
 }
 
-fn init_grass_chunk(
+fn init_ground_chunk(
   mut er_prepare_chunk: EventReader<PrepareChunkEvent>,
   mut ew_spawn_chunk: EventWriter<SpawnChunkEvent>,
   tilemap_layers: Res<TilemapLayers>,
   q_tilemaps: Query<&mut ChunkedTilemap>,
+  perlin: Res<WorldNoise>
 ){
+  let mut rng = thread_rng();
   let init_chunk_events = er_prepare_chunk.iter().filter(|event| event.tilemap_entity == tilemap_layers.ground.unwrap());
   for event in init_chunk_events{
     let tilemap = q_tilemaps.get(event.tilemap_entity).expect("no tilemap");
     let mut bundles = vec![];
     for x in 0..tilemap.chunk_size.x{
       for y in 0..tilemap.chunk_size.y{
+        let tile_index = if perlin.0.get_noise(
+          (event.chunk_index.x as f64) * (tilemap.chunk_size.x as f64)+(x as f64)*(tilemap.tile_size.x as f64),
+          (event.chunk_index.y as f64) * (tilemap.chunk_size.y as f64)+(y as f64)*(tilemap.tile_size.y as f64)
+        ) > -5.  {
+          let dark_gras_tiles = [3, 5, 7, 11, 13, 15, 17, 19, 21, 23, 25, 27];
+          dark_gras_tiles[rng.gen_range(0..dark_gras_tiles.len())]
+        } else {
+          30
+        };
         bundles.push(TileBundle {
           position: TilePos { x, y},
+          texture: TileTexture(tile_index),
           ..Default::default()
         });
       }

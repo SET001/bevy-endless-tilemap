@@ -136,10 +136,11 @@ pub fn player_controls(
   mut q_player: Query<(&ActionState<PlayerAction>, &mut Transform, Option<&MoveDirection>), With<Player>>,
   time: Res<Time>,
 ){
-  let speed = 2.5;
-  let step: f32 = 1./60.;
+  let speed = 5.;
+  let step: f32 = 1./30.;
   let delta = time.delta_seconds();
   let update_step = delta/step*speed;
+  let update_step = time.delta_seconds()* 200.5;
   
   let (action_state, mut player_transform, move_direction) = q_player.single_mut();
   if move_direction.is_some(){
