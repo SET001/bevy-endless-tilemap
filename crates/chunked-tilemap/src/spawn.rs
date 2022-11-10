@@ -3,6 +3,7 @@ use bevy_ecs_tilemap::{prelude::{TilemapSize, TilemapGridSize, TilemapTileSize, 
 
 use crate::{TilemapChunk, bundle::{ChunkedTilemap}, chunks::get_chunk_center};
 
+#[derive(Debug, PartialEq)]
 pub struct PrepareChunkEvent{
   pub tilemap_entity: Entity,
   pub chunk_index: IVec2,
@@ -21,6 +22,7 @@ pub fn spawn_chunk(
 ){
   
   for event in er_spawn_chunk.iter(){
+    info!("spawning chunk {:?}", event.chunk_index);
     let start = Instant::now();
     if let Ok(mut tilemap) = q_tilemaps.get_mut(event.tilemap_entity){
 
@@ -80,6 +82,6 @@ pub fn spawn_chunk(
       commands.entity(event.tilemap_entity).push_children(&[chunk]);
       tilemap.chunks.insert(event.chunk_index);
     }
-    info!("chunk spawn took {:?}", start.elapsed());
+    debug!("chunk spawn took {:?}", start.elapsed());
   }
 }

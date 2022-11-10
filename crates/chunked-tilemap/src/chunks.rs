@@ -19,49 +19,6 @@ pub fn update_current_chunk(
   }
 }
 
-pub fn spawn_chunks_around_current(
-  mut ew_prepare_chunk: EventWriter<PrepareChunkEvent>,
-  q_tilemaps: Query<(&ChunkedTilemap, Entity)>
-){
-  for (tilemap, entity) in q_tilemaps.iter(){
-    for y in (tilemap.current_chunk.y - tilemap.range)..=(tilemap.current_chunk.y + tilemap.range) {
-      for x in (tilemap.current_chunk.x - tilemap.range)..=(tilemap.current_chunk.x + tilemap.range) {
-        let index = IVec2::new(x, y);
-        if !tilemap.chunks.contains(&index){
-          info!("Spawning chunk init event for {:#?}", entity);
-          ew_prepare_chunk.send(PrepareChunkEvent {
-            tilemap_entity: entity,
-            chunk_index: index
-          });
-        }
-      }
-    }
-  }
-}
-
-pub fn despawn_outbound_chunks(
-  mut commands: Commands,
-  q_chunks: Query<(&Transform, Entity), With<TilemapChunk>>,
-  mut q_tilemaps: Query<(&mut ChunkedTilemap, &Children)>
-){
-  for (mut tilemap, children) in q_tilemaps.iter_mut(){
-    for &children in children.iter(){
-      if let Ok((transform, entity)) =  q_chunks.get(children){    
-        let chunk_index = get_chunk_at_position(
-          transform.translation.truncate(),
-          tilemap.chunk_size,
-          tilemap.tile_size
-        );
-        if (chunk_index.x-tilemap.current_chunk.x).abs() > tilemap.range|| (chunk_index.y-tilemap.current_chunk.y).abs() > tilemap.range {
-          // info!("despawning chunk at {:?} - {}", chunk_index, chunk_index-current_chunk.0);
-          tilemap.chunks.remove(&chunk_index);
-          commands.entity(entity).despawn_recursive();
-        }
-      }
-    }
-  }
-}
-
 pub fn nest_chunks(
   mut commands: Commands,
   added: Query<(Entity,&TilemapId),  (Added<TilemapId>, Without<Parent>)>
