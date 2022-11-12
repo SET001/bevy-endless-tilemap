@@ -167,6 +167,7 @@ fn init_trees_chunk(
         }
       }
     }
+    debug!("prepared {} tree bunles for chunk {:?}-{:?} of size: {:?}", bundles.len(), event.chunk_index, event.chunk_entity, tilemap.chunk_size);
     // info!("chunk: {:?} -> {:?}", event.chunk_index, history);
     ew_fill_chunk.send(FillChunkEvent{
       bundles,
@@ -212,7 +213,7 @@ fn init_ground_chunk(
         });
       }
     }
-    info!("prepared {} bunles for chunk {:?} of size: {:?}", bundles.len(), event.chunk_index, tilemap.chunk_size);
+    debug!("prepared {} ground bunles for chunk {:?}-{:?} of size: {:?}", bundles.len(), event.chunk_index, event.chunk_entity, tilemap.chunk_size);
     ew_fill_chunk.send(FillChunkEvent{
       bundles,
       chunk_index: event.chunk_index,

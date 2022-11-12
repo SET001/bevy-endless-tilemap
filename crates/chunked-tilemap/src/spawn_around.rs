@@ -21,7 +21,7 @@ fn prepare_event(
   tilemap_entity: Entity
 )->Option<SpawnChunkEvent>{
   if !existing_indexes.contains(&chunk_index){
-    info!("Spawning chunk init event for {:#?}", tilemap_entity);
+    debug!("Spawning chunk init event for {:#?}", tilemap_entity);
     Some(SpawnChunkEvent {
       tilemap_entity,
       chunk_index

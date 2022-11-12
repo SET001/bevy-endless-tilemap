@@ -11,7 +11,7 @@ pub fn fill_chunk(
   mut er_fill_chunk_event: EventReader<FillChunkEvent>
 ){
   for event in er_fill_chunk_event.iter(){
-    info!("filling chunk {:?} with {:?} bundles", event.chunk_index, event.bundles.len());
+    debug!("filling chunk {:?} with {:?} bundles", event.chunk_index, event.bundles.len());
     let mut bundles = event.bundles.clone();
     for bundle in bundles.iter_mut(){
       bundle.tilemap_id = TilemapId(event.chunk_entity);

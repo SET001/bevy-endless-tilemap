@@ -25,11 +25,11 @@ impl Plugin for ChunkedTilemapPlugin{
       .add_event::<FillChunkEvent>()
       .add_plugin(TilemapPlugin)
       .add_system(update_current_chunk)
-      .add_system_to_stage(CoreStage::First, spawn_chunks_around_current)
-      .add_system_to_stage(CoreStage::First, spawn_chunk.after(spawn_chunks_around_current))
-      .add_system_to_stage(CoreStage::PostUpdate, fill_chunk)
-      .add_system_to_stage(CoreStage::PostUpdate, nest_chunks.after(fill_chunk))
-      .add_system_to_stage(CoreStage::Last, despawn_outrange_chunks);
+      .add_system_to_stage(CoreStage::Update, spawn_chunks_around_current)
+      .add_system_to_stage(CoreStage::Update, spawn_chunk)
+      .add_system_to_stage(CoreStage::Update, fill_chunk)
+      .add_system_to_stage(CoreStage::Update, nest_chunks.after(fill_chunk))
+      .add_system_to_stage(CoreStage::Update, despawn_outrange_chunks);
   }
 }
 
