@@ -84,6 +84,6 @@ pub fn spawn_chunk(
         chunk_entity: chunk
       });
     }
-    info!("chunk spawn took {:?}", start.elapsed());
+    debug!("chunk spawn took {:?}", start.elapsed());
   }
 }

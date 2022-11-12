@@ -24,7 +24,7 @@ pub fn nest_chunks(
   added: Query<(Entity,&TilemapId),  (Added<TilemapId>, Without<Parent>)>
 ){
   if added.iter().count() > 0 {
-    println!("fixed nesting of {} items", added.iter().count());
+    debug!("fixed nesting of {} items", added.iter().count());
     for (entity, tilemap) in added.iter(){
   
       commands.entity(tilemap.0).push_children(&[entity]);

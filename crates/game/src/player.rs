@@ -139,8 +139,8 @@ pub fn player_controls(
   let speed = 5.;
   let step: f32 = 1./30.;
   let delta = time.delta_seconds();
-  let update_step = delta/step*speed;
-  let update_step = time.delta_seconds()* 200.5;
+  let update_step = time.delta_seconds()* 300.5;
+  // let update_step = speed;
   
   let (action_state, mut player_transform, move_direction) = q_player.single_mut();
   if move_direction.is_some(){
@@ -148,15 +148,19 @@ pub fn player_controls(
   } else {
     if action_state.pressed(PlayerAction::MoveRight) {
       player_transform.translation.x+=update_step;
+      trace!("time delta: {}", time.delta_seconds());
     }
     if action_state.pressed(PlayerAction::MoveLeft) {
       player_transform.translation.x-=update_step;
+      trace!("time delta: {}", time.delta_seconds());
     }
     if action_state.pressed(PlayerAction::MoveUp) {
       player_transform.translation.y+=update_step;
+      trace!("time delta: {}", time.delta_seconds());
     }
     if action_state.pressed(PlayerAction::MoveDown) {
       player_transform.translation.y-=update_step;
+      trace!("time delta: {}", time.delta_seconds());
     }
   }
   //player_transform.translation.x+=speed;

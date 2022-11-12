@@ -1,5 +1,6 @@
 use bevy::asset::diagnostic::AssetCountDiagnosticsPlugin;
 use bevy::diagnostic::EntityCountDiagnosticsPlugin;
+use bevy::log::LogSettings;
 use bevy::window::{PresentMode, WindowMode};
 use bevy::{asset::AssetServerSettings, diagnostic::FrameTimeDiagnosticsPlugin};
 use bevy::prelude::*;
@@ -40,7 +41,11 @@ fn main() {
       // mode: WindowMode::Fullscreen,
       present_mode: PresentMode::AutoVsync,
       ..default()
-  })
+    })
+    .insert_resource(LogSettings {
+      filter: "info,wgpu_core=warn,wgpu_hal=warn".into(),
+      level: bevy::log::Level::DEBUG,
+    })
     .add_plugin(FrameTimeDiagnosticsPlugin)
     .add_plugin(EntityCountDiagnosticsPlugin)
     .add_plugin(AssetCountDiagnosticsPlugin::<TextureAtlas>::default())
@@ -89,7 +94,7 @@ fn startup(
   let chunk_size = UVec2::new(
     (primary_window.width()/TILE_SIZE as f32).round() as u32,
     (primary_window.height()/TILE_SIZE as f32).round() as u32
-  ) / 4;
+  )/4;
 
   // let chunk_size = UVec2::new(
   //   5,
@@ -187,6 +192,7 @@ fn init_ground_chunk(
 ){
   let mut rng = thread_rng();
   let init_chunk_events = er_prepare_chunk.iter().filter(|event| event.tilemap_entity == tilemap_layers.ground.unwrap());
+  // let sand_tiles = vec![34, 10, 40, 38, 42, 44, 36, 32, 30];
   for event in init_chunk_events{
     let tilemap = q_tilemaps.get(event.tilemap_entity).expect("no tilemap");
     let mut bundles = vec![];
