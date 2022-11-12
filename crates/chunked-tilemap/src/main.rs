@@ -1,7 +1,7 @@
 use bevy::{prelude::*, DefaultPlugins, sprite::MaterialMesh2dBundle, input::mouse::MouseMotion, asset::AssetServerSettings};
 use bevy_ecs_tilemap::{tiles::{TilePos, TileTexture, TileBundle}};
 use bevy_editor_pls::EditorPlugin;
-use chunked_tilemap::{ChunkedTilemapPlugin, bundle::{ChunkedTilemapBundle, ChunkedTilemap}, spawn::{PrepareChunkEvent, SpawnChunkEvent}};
+use chunked_tilemap::{ChunkedTilemapPlugin, bundle::{ChunkedTilemapBundle, ChunkedTilemap}, spawn_chunk::{PrepareChunkEvent, SpawnChunkEvent}, fill_chunk::FillChunkEvent};
 
 const CHUNK_SIZE: u32 = 15;
 const TILE_SIZE: f32 = 32.;
@@ -107,7 +107,7 @@ fn move_camera(
 
 fn init_ground_chunk(
   mut er_prepare_chunk: EventReader<PrepareChunkEvent>,
-  mut ew_spawn_chunk: EventWriter<SpawnChunkEvent>,
+  mut ew_fill_chunk: EventWriter<FillChunkEvent>,
   q_tilemaps: Query<&mut ChunkedTilemap>,
   tilemap_layers: ResMut<TilemapLayers>,
 ){
@@ -120,6 +120,7 @@ fn init_ground_chunk(
     } else {
       3
     };
+
     let mut bundles = vec![];
 
     for x in 0..tilemap.chunk_size.x{
@@ -131,9 +132,11 @@ fn init_ground_chunk(
         });
       }
     }
-    ew_spawn_chunk.send(SpawnChunkEvent{
+
+    ew_fill_chunk.send(FillChunkEvent{
       bundles,
-      tilemap_entity: event.tilemap_entity,
+      chunk_entity: event.chunk_entity,
+      //tilemap_entity: event.tilemap_entity,
       chunk_index: event.chunk_index
     })
   }
@@ -141,7 +144,7 @@ fn init_ground_chunk(
 
 fn init_trees_chunk(
   mut er_prepare_chunk: EventReader<PrepareChunkEvent>,
-  mut ew_spawn_chunk: EventWriter<SpawnChunkEvent>,
+  mut ew_fill_chunk: EventWriter<FillChunkEvent>,
   q_tilemaps: Query<&mut ChunkedTilemap>,
   tilemap_layers: ResMut<TilemapLayers>,
 ){
@@ -165,9 +168,10 @@ fn init_trees_chunk(
         });
       }
     }
-    ew_spawn_chunk.send(SpawnChunkEvent{
+    ew_fill_chunk.send(FillChunkEvent{
       bundles,
-      tilemap_entity: event.tilemap_entity,
+      chunk_entity: event.chunk_entity,
+
       chunk_index: event.chunk_index
     })
   }

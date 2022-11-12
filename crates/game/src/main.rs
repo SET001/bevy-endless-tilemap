@@ -7,7 +7,8 @@ use bevy::prelude::*;
 use bevy_ecs_tilemap::tiles::{TileTexture, TilePos, TileBundle};
 use bevy_editor_pls::EditorPlugin;
 use chunked_tilemap::chunks::local_tile_index_to_global;
-use chunked_tilemap::spawn::{SpawnChunkEvent, PrepareChunkEvent};
+use chunked_tilemap::fill_chunk::FillChunkEvent;
+use chunked_tilemap::spawn_chunk::{SpawnChunkEvent, PrepareChunkEvent};
 use chunked_tilemap::{
   ChunkedTilemapPlugin,
   bundle::{ChunkedTilemap, ChunkedTilemapBundle}
@@ -52,7 +53,7 @@ fn main() {
     .add_plugin(EditorPlugin)
     .add_plugins(GameStatesPlugins)
     .add_state(GameStates::Load)
-    // .add_system_to_stage(CoreStage::PreUpdate, init_ground_chunk)
+    .add_system(init_ground_chunk)
     .add_system(init_trees_chunk);
     // .add_system(on_window_resize)
   app.run();
@@ -88,7 +89,7 @@ fn startup(
   let chunk_size = UVec2::new(
     (primary_window.width()/TILE_SIZE as f32).round() as u32,
     (primary_window.height()/TILE_SIZE as f32).round() as u32
-  ) / 9;
+  ) / 4;
 
   // let chunk_size = UVec2::new(
   //   5,
@@ -98,17 +99,17 @@ fn startup(
   info!("window size: {}x{}", primary_window.width(), primary_window.height());
   info!("chunk_size: {chunk_size}");
 
-  // tilemap_layers.ground = Some(commands.spawn_bundle(ChunkedTilemapBundle{
-  //   name: Name::new("Ground layer"),
-  //   chunked_tilemap: ChunkedTilemap{
-  //     chunk_size: chunk_size/4,
-  //     tile_size: Vec2::new(TILE_SIZE, TILE_SIZE),
-  //     range: 2,
-  //     texture_handle: asset_server.load("images/grass_tiles.png"),
-  //     ..Default::default()
-  //   },
-  //   ..Default::default()
-  // }).id());
+  tilemap_layers.ground = Some(commands.spawn_bundle(ChunkedTilemapBundle{
+    name: Name::new("Ground layer"),
+    chunked_tilemap: ChunkedTilemap{
+      chunk_size: chunk_size,
+      tile_size: Vec2::new(TILE_SIZE, TILE_SIZE),
+      range: 2,
+      texture_handle: asset_server.load("images/grass_tiles.png"),
+      ..Default::default()
+    },
+    ..Default::default()
+  }).id());
 
   tilemap_layers.trees = Some(commands.spawn_bundle(ChunkedTilemapBundle{
     name: Name::new("Trees layer"),
@@ -131,7 +132,7 @@ fn startup(
 
 fn init_trees_chunk(
   mut er_prepare_chunk: EventReader<PrepareChunkEvent>,
-  mut ew_spawn_chunk: EventWriter<SpawnChunkEvent>,
+  mut ew_fill_chunk: EventWriter<FillChunkEvent>,
   tilemap_layers: Res<TilemapLayers>,
   q_tilemaps: Query<&mut ChunkedTilemap>,
   perlin: Res<WorldNoise>
@@ -167,17 +168,18 @@ fn init_trees_chunk(
       }
     }
     // info!("chunk: {:?} -> {:?}", event.chunk_index, history);
-    ew_spawn_chunk.send(SpawnChunkEvent{
+    ew_fill_chunk.send(FillChunkEvent{
       bundles,
-      tilemap_entity: event.tilemap_entity,
-      chunk_index: event.chunk_index
+      chunk_index: event.chunk_index,
+      chunk_entity: event.chunk_entity
+
     })
   }
 }
 
 fn init_ground_chunk(
   mut er_prepare_chunk: EventReader<PrepareChunkEvent>,
-  mut ew_spawn_chunk: EventWriter<SpawnChunkEvent>,
+  mut ew_fill_chunk: EventWriter<FillChunkEvent>,
   tilemap_layers: Res<TilemapLayers>,
   q_tilemaps: Query<&mut ChunkedTilemap>,
   perlin: Res<WorldNoise>
@@ -210,10 +212,12 @@ fn init_ground_chunk(
         });
       }
     }
-    ew_spawn_chunk.send(SpawnChunkEvent{
+    info!("prepared {} bunles for chunk {:?} of size: {:?}", bundles.len(), event.chunk_index, tilemap.chunk_size);
+    ew_fill_chunk.send(FillChunkEvent{
       bundles,
-      tilemap_entity: event.tilemap_entity,
-      chunk_index: event.chunk_index
+      chunk_index: event.chunk_index,
+      chunk_entity: event.chunk_entity
+
     })
   }
 }

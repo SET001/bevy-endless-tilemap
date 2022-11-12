@@ -1,7 +1,7 @@
 use bevy::{prelude::*};
 use bevy_ecs_tilemap::{prelude::TilemapId};
 
-use crate::{spawn::{PrepareChunkEvent}, TilemapChunk, bundle::ChunkedTilemap};
+use crate::{spawn_chunk::{PrepareChunkEvent}, TilemapChunk, bundle::ChunkedTilemap};
 
 pub fn update_current_chunk(
   mut q_tilemaps: Query<&mut ChunkedTilemap>,

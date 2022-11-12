@@ -1,5 +1,5 @@
 use bevy::{prelude::*, winit::WinitPlugin, log::LogPlugin};
-use chunked_tilemap::{despawn_outrange::despawn_outrange_chunks, ChunkedTilemapPlugin, bundle::{ChunkedTilemap, ChunkedTilemapBundle}, TilemapChunk, spawn::{SpawnChunkEvent, PrepareChunkEvent}};
+use chunked_tilemap::{ChunkedTilemapPlugin, bundle::{ChunkedTilemap, ChunkedTilemapBundle}, TilemapChunk, spawn_chunk::{SpawnChunkEvent, PrepareChunkEvent}};
 
 const CHUNK_SIZE: u32 = 5;
 const TILE_SIZE: f32 = 32.;
@@ -10,7 +10,6 @@ fn fill_chunk(
 ){
   for event in er_prepare_chunk.iter(){
     ew_spawn_chunk.send(SpawnChunkEvent{
-      bundles: vec![],
       tilemap_entity: event.tilemap_entity,
       chunk_index: event.chunk_index
     })

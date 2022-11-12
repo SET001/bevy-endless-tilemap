@@ -1,17 +1,27 @@
 use bevy::{prelude::*, winit::WinitPlugin, log::LogPlugin};
-use chunked_tilemap::{despawn_outrange::despawn_outrange_chunks, ChunkedTilemapPlugin, bundle::{ChunkedTilemap, ChunkedTilemapBundle}, TilemapChunk, spawn::{SpawnChunkEvent, PrepareChunkEvent}};
+use bevy_ecs_tilemap::tiles::{TileBundle, TilePos, TileTexture};
+use chunked_tilemap::{ChunkedTilemapPlugin, bundle::{ChunkedTilemap, ChunkedTilemapBundle}, TilemapChunk, spawn_chunk::{SpawnChunkEvent, PrepareChunkEvent}, fill_chunk::FillChunkEvent};
 
 const CHUNK_SIZE: u32 = 5;
 const TILE_SIZE: f32 = 32.;
 
 fn fill_chunk(
   mut er_prepare_chunk: EventReader<PrepareChunkEvent>,
-  mut ew_spawn_chunk: EventWriter<SpawnChunkEvent>,
+  mut ew_fill_chunk: EventWriter<FillChunkEvent>,
 ){
+  let mut bundles = vec![];
+  for x in 0..10{
+    bundles.push(TileBundle {
+      position: TilePos { x, y: 0},
+      texture: TileTexture(1),
+      ..Default::default()
+    });
+  }
   for event in er_prepare_chunk.iter(){
-    ew_spawn_chunk.send(SpawnChunkEvent{
-      bundles: vec![],
-      tilemap_entity: event.tilemap_entity,
+    
+    ew_fill_chunk.send(FillChunkEvent{
+      bundles: bundles.clone(),
+      chunk_entity: event. chunk_entity,
       chunk_index: event.chunk_index
     })
   }
@@ -41,6 +51,13 @@ fn test_chunks_spawned_on_start() {
     },
     ..Default::default()
   });
+  app.update();
+  app.update();
+  app.update();
+
+  app.update();
+  app.update();
+  app.update();
   app.update();
   app.update();
   app.update();

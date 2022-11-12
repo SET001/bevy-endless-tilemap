@@ -1,5 +1,5 @@
 use bevy::{prelude::*, winit::WinitPlugin, log::LogPlugin, utils::HashSet};
-use chunked_tilemap::{ChunkedTilemapPlugin, bundle::{ChunkedTilemap, ChunkedTilemapBundle}, spawn::PrepareChunkEvent};
+use chunked_tilemap::{ChunkedTilemapPlugin, bundle::{ChunkedTilemap, ChunkedTilemapBundle}, spawn_chunk::PrepareChunkEvent};
 
 const CHUNK_SIZE: u32 = 5;
 const TILE_SIZE: f32 = 32.;

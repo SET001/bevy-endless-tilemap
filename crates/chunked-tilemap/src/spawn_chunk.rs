@@ -7,15 +7,16 @@ use crate::{TilemapChunk, bundle::{ChunkedTilemap}, chunks::get_chunk_center};
 pub struct PrepareChunkEvent{
   pub tilemap_entity: Entity,
   pub chunk_index: IVec2,
+  pub chunk_entity: Entity,
 }
 pub struct SpawnChunkEvent{
   pub tilemap_entity: Entity,
   pub chunk_index: IVec2,
-  pub bundles: Vec<TileBundle>,
 } 
 
 pub fn spawn_chunk(
   mut er_spawn_chunk: EventReader<SpawnChunkEvent>,
+  mut ew_prepare_chunk: EventWriter<PrepareChunkEvent>,
   mut commands: Commands,
   mut q_tilemaps: Query<&mut ChunkedTilemap>,
   #[cfg(feature = "dev-labels")] asset_server: Res<AssetServer>,
@@ -26,16 +27,13 @@ pub fn spawn_chunk(
     let start = Instant::now();
     if let Ok(mut tilemap) = q_tilemaps.get_mut(event.tilemap_entity){
 
-      let tilemap_entity = commands.spawn().id();
+      // let tilemap_entity = 
+      // info!("spawning tilemap entity {:?}", tilemap_entity);
       let tilemap_size = TilemapSize::from(tilemap.chunk_size);
       let tile_size = TilemapTileSize::from(tilemap.tile_size);
       let grid_size = TilemapGridSize::from(tilemap.tile_size);
-      let mut bundles = event.bundles.clone();
-      for bundle in bundles.iter_mut(){
-        bundle.tilemap_id = TilemapId(tilemap_entity);
-      }
-      commands.spawn_batch(bundles);
 
+      
       let transform = Transform::from_translation(get_chunk_center(
         tilemap.chunk_size,
         tilemap.tile_size,
@@ -44,8 +42,7 @@ pub fn spawn_chunk(
       
       // debug!(target: "chunk spawner", "spawning chunk {:?} on position {:?}", event.chunk_index, transform.translation);
   
-      let chunk = commands
-        .entity(tilemap_entity)
+      let chunk = commands.spawn()
         .insert_bundle(TilemapBundle {
           grid_size,
           size: tilemap_size,
@@ -81,6 +78,11 @@ pub fn spawn_chunk(
       
       commands.entity(event.tilemap_entity).push_children(&[chunk]);
       tilemap.chunks.insert(event.chunk_index);
+      ew_prepare_chunk.send(PrepareChunkEvent{
+        chunk_index: event.chunk_index,
+        tilemap_entity: event.tilemap_entity,
+        chunk_entity: chunk
+      });
     }
     debug!("chunk spawn took {:?}", start.elapsed());
   }
