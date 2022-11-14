@@ -143,26 +143,27 @@ pub fn player_controls(
   // let update_step = speed;
   
   let (action_state, mut player_transform, move_direction) = q_player.single_mut();
-  if move_direction.is_some(){
-
-  } else {
-    if action_state.pressed(PlayerAction::MoveRight) {
-      player_transform.translation.x+=update_step;
-      trace!("time delta: {}", time.delta_seconds());
-    }
-    if action_state.pressed(PlayerAction::MoveLeft) {
-      player_transform.translation.x-=update_step;
-      trace!("time delta: {}", time.delta_seconds());
-    }
-    if action_state.pressed(PlayerAction::MoveUp) {
-      player_transform.translation.y+=update_step;
-      trace!("time delta: {}", time.delta_seconds());
-    }
-    if action_state.pressed(PlayerAction::MoveDown) {
-      player_transform.translation.y-=update_step;
-      trace!("time delta: {}", time.delta_seconds());
-    }
+  if action_state.pressed(PlayerAction::MoveRight) {
+    player_transform.translation.x+=update_step;
+    // trace!("time delta: {}", time.delta_seconds());
   }
+  if action_state.pressed(PlayerAction::MoveLeft) {
+    player_transform.translation.x-=update_step;
+    // trace!("time delta: {}", time.delta_seconds());
+  }
+  if action_state.pressed(PlayerAction::MoveUp) {
+    player_transform.translation.y+=update_step;
+    // trace!("time delta: {}", time.delta_seconds());
+  }
+  if action_state.pressed(PlayerAction::MoveDown) {
+    player_transform.translation.y-=update_step;
+    // trace!("time delta: {}", time.delta_seconds());
+  }
+
+  // if move_direction.is_some(){
+
+  // } else {
+  // }
   //player_transform.translation.x+=speed;
 }
 

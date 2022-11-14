@@ -32,13 +32,13 @@ fn prepare_event(
 }
 
 pub fn spawn_chunks_around_current(
-  mut ew_prepare_chunk: EventWriter<SpawnChunkEvent>,
+  mut ew_spawn_chunk: EventWriter<SpawnChunkEvent>,
   q_tilemaps: Query<(&ChunkedTilemap, Entity)>
 ){
   for (tilemap, entity) in q_tilemaps.iter(){
     generate_chunk_indexes(tilemap.current_chunk, tilemap.range as i32).iter().for_each(|index|{
       if let Some(event) = prepare_event(&tilemap.chunks, index.clone(), entity){
-        ew_prepare_chunk.send(event);
+        ew_spawn_chunk.send(event);
       }
     });
   }

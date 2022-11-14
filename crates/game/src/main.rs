@@ -38,7 +38,7 @@ fn main() {
     })
     .insert_resource(WindowDescriptor{
       title: "Bevy app!".to_string(),
-      // mode: WindowMode::Fullscreen,
+      mode: WindowMode::Fullscreen,
       present_mode: PresentMode::AutoVsync,
       ..default()
     })
@@ -109,7 +109,7 @@ fn startup(
     chunked_tilemap: ChunkedTilemap{
       chunk_size: chunk_size,
       tile_size: Vec2::new(TILE_SIZE, TILE_SIZE),
-      range: 2,
+      range: 3,
       texture_handle: asset_server.load("images/grass_tiles.png"),
       ..Default::default()
     },
@@ -121,7 +121,7 @@ fn startup(
     chunked_tilemap: ChunkedTilemap{
       chunk_size,
       tile_size: Vec2::new(TILE_SIZE, TILE_SIZE),
-      range: 2
+      range: 3
       
       ,
       texture_handle: asset_server.load("images/tree_tiles.png"),

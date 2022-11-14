@@ -15,8 +15,8 @@ impl Plugin for GameStatePlugin {
         )
         .add_system_set(
           SystemSet::on_update(GameStates::Game)
-          .with_system(bind_camera_to_player)
           .with_system(player_controls)
+          .with_system(bind_camera_to_player.after(player_controls))
           .with_system(update_tilemaps)
           // .with_system(restart)
         );

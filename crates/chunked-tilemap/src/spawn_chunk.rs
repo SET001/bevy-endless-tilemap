@@ -23,9 +23,8 @@ pub fn spawn_chunk(
 ){
   
   for event in er_spawn_chunk.iter(){
-    debug!("spawning chunk {:?}", event.chunk_index);
-    let start = Instant::now();
     if let Ok(mut tilemap) = q_tilemaps.get_mut(event.tilemap_entity){
+      let start = Instant::now();
 
       // let tilemap_entity = 
       // info!("spawning tilemap entity {:?}", tilemap_entity);
@@ -83,7 +82,7 @@ pub fn spawn_chunk(
         tilemap_entity: event.tilemap_entity,
         chunk_entity: chunk
       });
+      debug!("chunk {:?}-{:?} spawn took {:?}", event.chunk_index, chunk, start.elapsed());
     }
-    debug!("chunk spawn took {:?}", start.elapsed());
   }
 }
