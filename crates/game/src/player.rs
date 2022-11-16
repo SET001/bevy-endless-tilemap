@@ -10,9 +10,6 @@ pub enum Direction{
   Left
 }
 
-#[derive(Component)]
-pub struct MoveDirection(pub Direction);
-
 #[derive(Component, Default)]
 pub struct Player;
 
@@ -26,49 +23,9 @@ pub enum PlayerAction {
 }
 
 #[derive(Component)]
-pub enum Gender{
-  Male,
-  Female
-}
-pub enum CentaurColor{
-  Brown,
-  DarkBrown,
-  DarkGrey,
-  LightBrown,
-  LightGrey
-}
-#[derive(Component)]
 pub enum PlayerRace{
-  Centaur(Gender, CentaurColor),
-  DeepDwarf,
-  DeepElf,
-  Demigod,
-  Demonspawn,
-  Draconian,
-  Dwarf,
-  Elf,
-  Formicid,
-  Gargoyle,
-  Ghoul,
-  Ghoul2,
   Gnome,
-  Halfling,
   Human,
-  Kenku,
-  Kobold,
-  Lorc,
-  Merfolk,
-  Minotaur,
-  Mummy,
-  Naga,
-  Octopode,
-  Ogre,
-  Orc,
-  Shadow,
-  Spriggan,
-  Tengu,
-  Troll,
-  Vampire
 }
 
 impl Default for PlayerRace{
@@ -89,8 +46,6 @@ pub fn spawn_player(
   mut commands: Commands,
   texture_handles: Res<TextureAtlases>,
 ){
-  
-  // info!("race: {}", PlayerRace::Ogre as usize);
   commands.spawn_bundle(PlayerBundle{
     name: Name::new("Player".to_string()),
     spatial_bundle: SpatialBundle{
@@ -100,9 +55,7 @@ pub fn spawn_player(
     ..Default::default()
   })
   .insert_bundle(InputManagerBundle::<PlayerAction> {
-    // Stores "which actions are currently pressed"
     action_state: ActionState::default(),
-    // Describes how to convert from player inputs into those actions
     input_map: InputMap::new([
       (KeyCode::Right, PlayerAction::MoveRight),
       (KeyCode::Left, PlayerAction::MoveLeft),
@@ -133,38 +86,25 @@ pub fn bind_camera_to_player(
 }
 
 pub fn player_controls(
-  mut q_player: Query<(&ActionState<PlayerAction>, &mut Transform, Option<&MoveDirection>), With<Player>>,
+  mut q_player: Query<(&ActionState<PlayerAction>, &mut Transform), With<Player>>,
   time: Res<Time>,
 ){
-  let speed = 5.;
-  let step: f32 = 1./30.;
-  let delta = time.delta_seconds();
-  let update_step = time.delta_seconds()* 300.5;
-  // let update_step = speed;
+  let speed = 300.5;
+  let update_step = time.delta_seconds()* speed;
   
-  let (action_state, mut player_transform, move_direction) = q_player.single_mut();
+  let (action_state, mut player_transform) = q_player.single_mut();
   if action_state.pressed(PlayerAction::MoveRight) {
     player_transform.translation.x+=update_step;
-    // trace!("time delta: {}", time.delta_seconds());
   }
   if action_state.pressed(PlayerAction::MoveLeft) {
     player_transform.translation.x-=update_step;
-    // trace!("time delta: {}", time.delta_seconds());
   }
   if action_state.pressed(PlayerAction::MoveUp) {
     player_transform.translation.y+=update_step;
-    // trace!("time delta: {}", time.delta_seconds());
   }
   if action_state.pressed(PlayerAction::MoveDown) {
     player_transform.translation.y-=update_step;
-    // trace!("time delta: {}", time.delta_seconds());
   }
-
-  // if move_direction.is_some(){
-
-  // } else {
-  // }
-  //player_transform.translation.x+=speed;
 }
 
 pub fn despawn_player(){
