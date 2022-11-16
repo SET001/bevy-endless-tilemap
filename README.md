@@ -1,6 +1,9 @@
 # bevy-endless-tilemap
 
 Example of rendering endless tilemap with Bevy
+
+Has few layers - ground and trees. Separate systems to populate each layer.
+
 Uses [bevy_ecs_tilemap](https://github.com/StarArawn/bevy_ecs_tilemap)
 
 Video: https://www.youtube.com/watch?v=NTdktZBUCG8
